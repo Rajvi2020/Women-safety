@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="{% block meta_description %}SheShield AI — Women Safety & Career Empowerment{% endblock %}"/>
+  <title>{% block title %}Dashboard{% endblock %} — SheShield AI</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode:'class',
+      theme:{ extend:{
+        colors:{ primary:{DEFAULT:'#7C3AED',light:'#A78BFA',dark:'#5B21B6'}, secondary:{DEFAULT:'#EC4899',light:'#F9A8D4'}, accent:'#6366F1' },
+        fontFamily:{ sans:['Inter','sans-serif'], display:['Poppins','sans-serif'] }
+      }}
+    };
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{% static 'css/custom.css' %}"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 dark:bg-[#0F0A1E] min-h-screen">
+
+  <!-- Sidebar -->
+  {% include 'components/sidebar.html' %}
+
+  <!-- Main Wrapper -->
+  <div class="main-content lg:ml-[260px] flex flex-col min-h-screen transition-all duration-300">
+
+    <!-- Navbar -->
+    {% include 'components/navbar.html' %}
+
+    <!-- Page Content -->
+    <main class="flex-1 p-4 lg:p-6 xl:p-8">
+      {% if messages %}
+      <div class="mb-4 space-y-2">
+        {% for message in messages %}
+        <div class="flex items-center gap-2 p-3 rounded-xl text-sm font-medium
+          {% if message.tags == 'success' %}bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400{% elif message.tags == 'error' %}bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400{% else %}bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400{% endif %}">
+          <i data-lucide="{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}x-circle{% else %}info{% endif %}" class="w-4 h-4"></i>
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-4 px-6 border-t border-gray-200 dark:border-purple-900/30 mt-auto">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
+        <span>© 2025 <span class="gradient-text font-semibold">SheShield AI</span>. All rights reserved.</span>
+        <div class="flex items-center gap-4">
+          <a href="#" class="hover:text-purple-500 transition">Privacy</a>
+          <a href="#" class="hover:text-purple-500 transition">Terms</a>
+          <a href="#" class="hover:text-purple-500 transition">Support</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- SOS Modal -->
+  <div id="sosModal" class="modal-overlay">
+    <div class="modal-box text-center">
+      <div class="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="text-4xl">🚨</span>
+      </div>
+      <h2 class="font-display font-bold text-2xl text-red-600 mb-2">SOS Activated!</h2>
+      <p class="text-gray-500 dark:text-gray-400 mb-4 text-sm">Emergency contacts and nearby services have been notified with your live location.</p>
+      <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 mb-5 text-sm text-left space-y-2">
+        <div class="flex items-center gap-2 text-red-700 dark:text-red-400"><i data-lucide="check" class="w-4 h-4"></i> Location shared with 3 contacts</div>
+        <div class="flex items-center gap-2 text-red-700 dark:text-red-400"><i data-lucide="check" class="w-4 h-4"></i> Police helpline notified</div>
+        <div class="flex items-center gap-2 text-red-700 dark:text-red-400"><i data-lucide="check" class="w-4 h-4"></i> Audio recording started</div>
+      </div>
+      <!-- SOS Modal Contacts List -->
+      <div id="sosContactsSection" class="mb-5 text-left hidden">
+        <p class="text-xs font-bold text-gray-400 uppercase mb-2">Send SMS with Live Location to:</p>
+        <div id="sosContactsList" class="space-y-2">
+          <!-- Dynamic contacts will be inserted here -->
+        </div>
+      </div>
+
+      <button data-modal-close="sosModal" class="btn-primary w-full py-3">✓ I am Safe Now</button>
+    </div>
+  </div>
+
+  <script>if(window.lucide)lucide.createIcons();</script>
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" class="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="{% block meta_description %}SheShield AI — Women Safety & Career Empowerment Platform{% endblock %}" />
+  <title>{% block title %}SheShield AI{% endblock %} | SheShield AI</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: '#7C3AED', light: '#A78BFA', dark: '#5B21B6' },
+            secondary: { DEFAULT: '#EC4899', light: '#F9A8D4', dark: '#BE185D' },
+            accent: '#6366F1',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Poppins', 'sans-serif'],
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease forwards',
+            'slide-in': 'slideIn 0.4s ease forwards',
+            'pulse-slow': 'pulse 3s infinite',
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+  {% block body %}{% endblock %}
+
+  <!-- Toast container (auto) -->
+  <!-- Global Modal for SOS -->
+  <div id="sosModal" class="modal-overlay">
+    <div class="modal-box text-center">
+      <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="text-4xl">🚨</span>
+      </div>
+      <h2 class="font-display font-bold text-2xl text-red-600 mb-2">SOS Activated!</h2>
+      <p class="text-gray-500 dark:text-gray-400 mb-6">Your emergency contacts and nearby services have been notified with your live location.</p>
+      <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 mb-6 text-sm text-left space-y-2">
+        <div class="flex items-center gap-2 text-red-700 dark:text-red-400"><span>✅</span> Location shared with 3 contacts</div>
+        <div class="flex items-center gap-2 text-red-700 dark:text-red-400"><span>✅</span> Police helpline notified</div>
+        <div class="flex items-center gap-2 text-red-700 dark:text-red-400"><span>✅</span> Recording started</div>
+      </div>
+      <button data-modal-close="sosModal" class="btn-primary w-full py-3">I am Safe Now</button>
+    </div>
+  </div>
+
+  <!-- Lucide Icons Init -->
+  <script>if(window.lucide) lucide.createIcons();</script>
+  <!-- Main JS -->
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

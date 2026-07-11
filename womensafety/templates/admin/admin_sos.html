@@ -1,0 +1,213 @@
+{% extends 'layouts/admin_layout.html' %}
+{% load static %}
+{% block title %}SOS Monitoring{% endblock %}
+{% block page_title %}SOS Monitoring{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Alert Banner if active SOS -->
+  {% if active_sos_count %}
+  <div class="flex items-center gap-3 p-4 bg-red-600 text-white rounded-2xl animate-pulse">
+    <i data-lucide="alert-octagon" class="w-6 h-6 flex-shrink-0"></i>
+    <p class="font-bold">{{ active_sos_count }} ACTIVE SOS alert{{ active_sos_count|pluralize }}! Immediate response required.</p>
+    <a href="#activeAlerts" class="ml-auto bg-white text-red-600 font-bold text-xs px-3 py-1.5 rounded-lg">View Now</a>
+  </div>
+  {% endif %}
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="card p-4"><p class="text-xs text-gray-400 mb-1">Total Today</p><p class="text-2xl font-bold text-red-600" data-counter="{{ total_today|default:'7' }}">0</p></div>
+    <div class="card p-4"><p class="text-xs text-gray-400 mb-1">Active Now</p><p class="text-2xl font-bold text-orange-500" data-counter="{{ active_now|default:'2' }}">0</p></div>
+    <div class="card p-4"><p class="text-xs text-gray-400 mb-1">Resolved Today</p><p class="text-2xl font-bold text-green-600" data-counter="{{ resolved_today|default:'5' }}">0</p></div>
+    <div class="card p-4"><p class="text-xs text-gray-400 mb-1">Avg. Response</p><p class="text-2xl font-bold gradient-text">{{ avg_response|default:'4.2' }}m</p></div>
+  </div>
+
+  <!-- Active Alerts -->
+  <div class="card p-6" id="activeAlerts">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-display font-bold text-xl flex items-center gap-2 text-red-600">
+        <span class="w-3 h-3 bg-red-500 rounded-full animate-pulse inline-block"></span> Active SOS Alerts
+      </h3>
+      <span class="badge badge-red">{{ active_now|default:'2' }} active</span>
+    </div>
+    <div class="space-y-3" id="activeList">
+      {% for sos in active_sos %}
+      <div class="flex items-start gap-4 p-4 bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-900/40 rounded-2xl sos-alert-item">
+        <img src="https://ui-avatars.com/api/?name={{ sos.user.first_name }}&background=DC2626&color=fff&size=44" class="avatar w-11 h-11 flex-shrink-0"/>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 flex-wrap mb-1">
+            <p class="font-bold">{{ sos.user.get_full_name }}</p>
+            <span class="badge badge-red text-xs animate-pulse">🔴 ACTIVE</span>
+          </div>
+          <p class="text-sm text-gray-500">{{ sos.user.phone }}</p>
+          <div class="flex flex-wrap gap-3 text-xs text-gray-500 mt-1">
+            <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> {{ sos.location|default:'Pune, MH' }}</span>
+            <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> {{ sos.created_at|timesince }} ago</span>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2 flex-shrink-0">
+          <a href="tel:{{ sos.user.phone }}" class="text-xs btn-danger py-1.5 px-3 text-center">📞 Call</a>
+          <button onclick="resolveAlert('{{ sos.id }}', this)" class="text-xs btn-outline py-1.5 px-3 text-green-600 border-green-400 hover:bg-green-50">✓ Resolve</button>
+        </div>
+      </div>
+      {% empty %}
+      <div class="flex items-start gap-4 p-4 bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-900/40 rounded-2xl">
+        <img src="https://ui-avatars.com/api/?name=Sneha+P&background=DC2626&color=fff&size=44" class="avatar w-11 h-11 flex-shrink-0"/>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1"><p class="font-bold">Sneha Patil</p><span class="badge badge-red text-xs">🔴 ACTIVE</span></div>
+          <p class="text-sm text-gray-500">+91 98765 43210</p>
+          <div class="flex gap-3 text-xs text-gray-500 mt-1"><span>📍 Kothrud, Pune</span><span>🕐 12 min ago</span></div>
+        </div>
+        <div class="flex flex-col gap-2"><button class="text-xs btn-danger py-1.5 px-3">📞 Call</button><button class="text-xs btn-outline py-1.5 px-3 text-green-600 border-green-400">✓ Resolve</button></div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Alert History Table -->
+  <div class="card p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-display font-bold text-xl">SOS History</h3>
+      <div class="flex gap-3">
+        <select class="form-input text-sm py-1.5 w-36">
+          <option>Today</option><option>Last 7 days</option><option>Last Month</option>
+        </select>
+        <a href="{% url 'admin_export_users' %}" class="btn-outline text-xs py-1.5 px-3 flex items-center gap-1">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i> Export
+        </a>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="data-table">
+        <thead><tr><th>User</th><th>Location</th><th>Triggered</th><th>Duration</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for sos in sos_history %}
+          <tr>
+            <td><div class="flex items-center gap-2"><img src="https://ui-avatars.com/api/?name={{ sos.user.first_name }}&background=7C3AED&color=fff&size=32" class="avatar w-8 h-8"/><div><p class="font-medium text-sm">{{ sos.user.get_full_name }}</p><p class="text-xs text-gray-400">{{ sos.user.phone }}</p></div></div></td>
+            <td class="text-sm text-gray-500">{{ sos.location }}</td>
+            <td class="text-sm text-gray-500">{{ sos.created_at|date:'d M, H:i' }}</td>
+            <td class="text-sm">{{ sos.duration|default:'—' }}</td>
+            <td><span class="badge {% if sos.status == 'resolved' %}badge-green{% elif sos.status == 'active' %}badge-red{% else %}badge-blue{% endif %} text-xs">{{ sos.status|capfirst }}</span></td>
+            <td><button class="text-xs text-purple-600 hover:underline font-semibold" data-id="{{ sos.id }}" data-action="view-sos">👁 View</button></td>
+          </tr>
+          {% empty %}
+          <tr><td><div class="flex items-center gap-2"><img src="https://ui-avatars.com/api/?name=Riya+M&background=7C3AED&color=fff&size=32" class="avatar w-8 h-8"/><div><p class="font-medium text-sm">Riya Mehta</p><p class="text-xs text-gray-400">+91 91234 56789</p></div></div></td><td class="text-sm text-gray-500">Mumbai, MH</td><td class="text-sm text-gray-500">11 Jul, 08:32</td><td class="text-sm">8 min</td><td><span class="badge badge-green text-xs">Resolved</span></td><td><button class="text-xs text-purple-600 hover:underline">View</button></td></tr>
+          <tr><td><div class="flex items-center gap-2"><img src="https://ui-avatars.com/api/?name=Anjali+R&background=EC4899&color=fff&size=32" class="avatar w-8 h-8"/><div><p class="font-medium text-sm">Anjali Rao</p><p class="text-xs text-gray-400">+91 87654 32100</p></div></div></td><td class="text-sm text-gray-500">Delhi, DL</td><td class="text-sm text-gray-500">11 Jul, 07:15</td><td class="text-sm">15 min</td><td><span class="badge badge-green text-xs">Resolved</span></td><td><button class="text-xs text-purple-600 hover:underline">View</button></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SOS Detail Modal -->
+  <div id="sosDetailModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:480px;">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="font-display font-bold text-xl text-red-600">🚨 SOS Alert Detail</h3>
+        <button data-modal-close="sosDetailModal" class="text-gray-400 hover:text-red-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div id="sosDetailContent" class="space-y-3 text-sm">
+        <div class="text-gray-400 text-center py-4">Loading…</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Leaflet Map Integration -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+function getCsrf() { return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''; }
+
+function showToast(msg, type='info') {
+  const t = document.createElement('div');
+  t.className = `toast show ${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3500);
+}
+
+function resolveAlert(id, btn) {
+  if(!confirm('Mark this SOS as resolved?')) return;
+  fetch(`/adminpanel/sos/${id}/resolve/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCsrf() }
+  }).then(r => r.json())
+  .then(data => {
+    btn.closest('.sos-alert-item')?.remove();
+    showToast('✓ SOS marked as resolved', 'success');
+  }).catch(() => showToast('Failed to resolve', 'error'));
+}
+
+// Event delegation for SOS history view button
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('[data-action="view-sos"]');
+  if (btn) viewSos(btn.dataset.id);
+});
+
+function viewSos(id) {
+  const modal = document.getElementById('sosDetailModal');
+  const content = document.getElementById('sosDetailContent');
+  content.innerHTML = '<div class="text-gray-400 text-center py-4">Loading…</div>';
+  modal.classList.add('active');
+  fetch(`/adminpanel/sos/${id}/detail/`)
+  .then(r => r.json())
+  .then(sos => {
+    content.innerHTML = `
+      <div class="grid grid-cols-2 gap-3">
+        <div class="col-span-2 flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl">
+          <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(sos.user)}&background=DC2626&color=fff&size=44" class="avatar w-11 h-11"/>
+          <div><p class="font-bold">${sos.user}</p><p class="text-xs text-gray-400">${sos.email}</p></div>
+        </div>
+        <div class="p-3 bg-gray-50 dark:bg-white/5 rounded-xl"><p class="text-xs text-gray-400 mb-1">Phone</p><p class="font-semibold">${sos.phone}</p></div>
+        <div class="p-3 bg-gray-50 dark:bg-white/5 rounded-xl"><p class="text-xs text-gray-400 mb-1">Status</p><p class="font-semibold ${sos.status==='resolved'?'text-green-600':'text-red-600'}">${sos.status.toUpperCase()}</p></div>
+        <div class="col-span-2 p-3 bg-gray-50 dark:bg-white/5 rounded-xl"><p class="text-xs text-gray-400 mb-1">📍 Location</p><p class="font-semibold">${sos.location}</p></div>
+        
+        <!-- Live map location element -->
+        <div class="col-span-2 p-3 bg-gray-50 dark:bg-white/5 rounded-xl">
+          <p class="text-xs text-gray-400 mb-2">📍 Live Map View</p>
+          <div id="detailMapEl" class="w-full rounded-lg overflow-hidden border border-gray-100 dark:border-white/10" style="height:200px; z-index: 1;"></div>
+        </div>
+
+        <div class="p-3 bg-gray-50 dark:bg-white/5 rounded-xl"><p class="text-xs text-gray-400 mb-1">⏰ Triggered</p><p class="font-semibold">${sos.created_at}</p></div>
+        <div class="p-3 bg-gray-50 dark:bg-white/5 rounded-xl"><p class="text-xs text-gray-400 mb-1">✅ Resolved</p><p class="font-semibold">${sos.resolved_at}</p></div>
+      </div>`;
+
+    // Initialize Leaflet map
+    let lat = sos.latitude || 18.5204;
+    let lng = sos.longitude || 73.8567;
+    setTimeout(() => {
+      const mapContainer = L.DomUtil.get('detailMapEl');
+      if (mapContainer != null) {
+        mapContainer._leaflet_id = null;
+      }
+      const detailMap = L.map('detailMapEl').setView([lat, lng], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(detailMap);
+      
+      L.marker([lat, lng]).addTo(detailMap)
+        .bindPopup(`<b>${sos.user}</b><br>SOS Location`)
+        .openPopup();
+    }, 150);
+  })
+  .catch(() => { content.innerHTML = '<p class="text-red-500 text-center py-4">Failed to load SOS details.</p>'; });
+}
+
+// Modal close handlers
+document.querySelectorAll('[data-modal-close]').forEach(btn => {
+  btn.addEventListener('click', () => document.getElementById(btn.dataset.modalClose)?.classList.remove('active'));
+});
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });
+});
+
+// Auto-refresh every 30 seconds
+setInterval(() => window.location.reload(), 30000);
+</script>
+{% endblock %}
+

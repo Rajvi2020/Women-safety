@@ -1,0 +1,241 @@
+{% extends 'layouts/admin_layout.html' %}
+{% load static %}
+{% block title %}Job Management{% endblock %}
+{% block page_title %}Job Management{% endblock %}
+
+{% block content %}
+<div class="space-y-5">
+
+  {% if messages %}
+  {% for message in messages %}
+  <div class="flex items-center gap-3 p-4 rounded-2xl {% if message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% else %}bg-red-50 text-red-700 border border-red-200{% endif %}">
+    <i data-lucide="{% if message.tags == 'success' %}check-circle{% else %}alert-circle{% endif %}" class="w-5 h-5 flex-shrink-0"></i>
+    <span>{{ message }}</span>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <!-- Toolbar -->
+  <div class="card p-4 flex flex-col sm:flex-row gap-3">
+    <div class="search-bar flex-1"><i data-lucide="search" class="w-4 h-4 text-gray-400"></i><input id="jobSearch" type="search" placeholder="Search jobs…"/></div>
+    <select class="form-input w-full sm:w-36 text-sm" id="jobStatusFilter">
+      <option value="">All Status</option><option value="active">Active</option><option value="expired">Expired</option>
+    </select>
+    <button class="btn-primary text-sm py-2 px-4 flex items-center gap-1.5" data-modal-open="addJobModal">
+      <i data-lucide="plus" class="w-4 h-4"></i> Add Job
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="card overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="data-table">
+        <thead><tr><th>Job Title</th><th>Company</th><th>Location</th><th>Type</th><th>Posted</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="jobTableBody">
+          {% for job in jobs %}
+          <tr class="job-row" data-id="{{ job.id }}" data-status="{% if job.is_active %}active{% else %}expired{% endif %}">
+            <td><p class="font-medium text-sm">{{ job.title }}</p><p class="text-xs text-gray-400">{{ job.category }}</p></td>
+            <td class="text-sm text-gray-600 dark:text-gray-400">{{ job.company }}</td>
+            <td class="text-sm text-gray-500">{{ job.location }}</td>
+            <td><span class="badge badge-purple text-xs">{{ job.type }}</span></td>
+            <td class="text-sm text-gray-500">{{ job.posted_at|date:'d M Y' }}</td>
+            <td><span class="badge {% if job.is_active %}badge-green{% else %}badge-red{% endif %} text-xs">{% if job.is_active %}Active{% else %}Expired{% endif %}</span></td>
+            <td><div class="flex gap-2">
+              <button class="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 hover:bg-blue-200 transition" data-id="{{ job.id }}" data-action="edit" title="Edit Job"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+              <button class="w-8 h-8 rounded-xl bg-red-100 flex items-center justify-center text-red-600 hover:bg-red-200 transition" data-id="{{ job.id }}" data-action="delete" title="Delete Job"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+            </div></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" class="text-center py-8 text-gray-400">No jobs found. Add your first job using the button above.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add Job Modal -->
+<div id="addJobModal" class="modal-overlay">
+  <div class="modal-box" style="max-width:600px;">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-display font-bold text-xl">Add New Job</h3>
+      <button data-modal-close="addJobModal" class="text-gray-400 hover:text-red-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <form method="POST" action="{% url 'admin_jobs' %}" class="space-y-4">
+      {% csrf_token %}
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="form-label">Job Title *</label><input type="text" name="title" required class="form-input text-sm" placeholder="e.g. Data Scientist"/></div>
+        <div><label class="form-label">Company *</label><input type="text" name="company" required class="form-input text-sm" placeholder="e.g. TCS"/></div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="form-label">Location</label><input type="text" name="location" class="form-input text-sm" placeholder="City / Remote"/></div>
+        <div><label class="form-label">Salary</label><input type="text" name="salary" class="form-input text-sm" placeholder="₹10-15 LPA"/></div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="form-label">Job Type</label><select name="type" class="form-input text-sm"><option value="full-time">Full-time</option><option value="part-time">Part-time</option><option value="remote">Remote</option><option value="contract">Contract</option><option value="internship">Internship</option></select></div>
+        <div><label class="form-label">Category</label><select name="category" class="form-input text-sm"><option>Technology</option><option>Design</option><option>Finance</option><option>Marketing</option><option>Healthcare</option><option>Education</option></select></div>
+      </div>
+      <div><label class="form-label">Description</label><textarea name="description" rows="3" class="form-input text-sm resize-none" placeholder="Job description…"></textarea></div>
+      <div class="flex items-center gap-2"><input type="checkbox" id="womenFriendly" name="is_women_friendly" class="accent-purple-600"/><label for="womenFriendly" class="text-sm font-medium">Mark as Women-Friendly ♀</label></div>
+      <div class="flex gap-3">
+        <button type="submit" class="btn-primary flex-1 py-3">Post Job</button>
+        <button type="button" data-modal-close="addJobModal" class="btn-outline flex-1 py-3">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Job Modal -->
+<div id="editJobModal" class="modal-overlay">
+  <div class="modal-box" style="max-width:600px;">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-display font-bold text-xl">Edit Job</h3>
+      <button data-modal-close="editJobModal" class="text-gray-400 hover:text-red-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <form id="editJobForm" class="space-y-4">
+      {% csrf_token %}
+      <input type="hidden" id="editJobId"/>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="form-label">Job Title *</label><input type="text" id="edit_title" required class="form-input text-sm"/></div>
+        <div><label class="form-label">Company *</label><input type="text" id="edit_company" required class="form-input text-sm"/></div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="form-label">Location</label><input type="text" id="edit_location" class="form-input text-sm"/></div>
+        <div><label class="form-label">Salary</label><input type="text" id="edit_salary" class="form-input text-sm"/></div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="form-label">Job Type</label><select id="edit_type" class="form-input text-sm"><option value="full-time">Full-time</option><option value="part-time">Part-time</option><option value="remote">Remote</option><option value="contract">Contract</option><option value="internship">Internship</option></select></div>
+        <div><label class="form-label">Category</label><select id="edit_category" class="form-input text-sm"><option>Technology</option><option>Design</option><option>Finance</option><option>Marketing</option><option>Healthcare</option><option>Education</option></select></div>
+      </div>
+      <div><label class="form-label">Description</label><textarea id="edit_description" rows="3" class="form-input text-sm resize-none"></textarea></div>
+      <div class="flex items-center gap-3">
+        <label class="flex items-center gap-2"><input type="checkbox" id="edit_women_friendly" class="accent-purple-600"/><span class="text-sm">Women-Friendly ♀</span></label>
+        <label class="flex items-center gap-2"><input type="checkbox" id="edit_is_active" class="accent-green-600"/><span class="text-sm">Active</span></label>
+      </div>
+      <div class="flex gap-3">
+        <button type="button" onclick="submitEditJob()" class="btn-primary flex-1 py-3">Save Changes</button>
+        <button type="button" data-modal-close="editJobModal" class="btn-outline flex-1 py-3">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function getCsrf() {
+  return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+}
+
+function showToast(msg, type='info') {
+  const t = document.createElement('div');
+  t.className = `toast show ${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3500);
+}
+
+// Search
+document.getElementById('jobSearch')?.addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.job-row').forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+
+// Status filter
+document.getElementById('jobStatusFilter')?.addEventListener('change', function() {
+  const val = this.value;
+  document.querySelectorAll('.job-row').forEach(r => {
+    r.style.display = (!val || r.dataset.status === val) ? '' : 'none';
+  });
+});
+
+// Event delegation for edit/delete buttons (avoids Django template vars in onclick)
+document.getElementById('jobTableBody')?.addEventListener('click', function(e) {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+  if (action === 'edit') editJob(id, btn);
+  if (action === 'delete') deleteJob(id, btn);
+});
+
+// Edit job - fetch current data, populate modal
+function editJob(id, btn) {
+  fetch(`/adminpanel/jobs/${id}/edit/`, {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(r => r.json())
+  .then(job => {
+    document.getElementById('editJobId').value = job.id;
+    document.getElementById('edit_title').value = job.title;
+    document.getElementById('edit_company').value = job.company;
+    document.getElementById('edit_location').value = job.location;
+    document.getElementById('edit_salary').value = job.salary;
+    document.getElementById('edit_description').value = job.description;
+    document.getElementById('edit_women_friendly').checked = job.is_women_friendly;
+    document.getElementById('edit_is_active').checked = job.is_active;
+    const typeEl = document.getElementById('edit_type');
+    const catEl = document.getElementById('edit_category');
+    [...typeEl.options].forEach(o => o.selected = o.value === job.type);
+    [...catEl.options].forEach(o => o.selected = o.text === job.category);
+    document.getElementById('editJobModal').classList.add('active');
+  })
+  .catch(() => showToast('Failed to load job data', 'error'));
+}
+
+function submitEditJob() {
+  const id = document.getElementById('editJobId').value;
+  const formData = new FormData();
+  formData.append('title', document.getElementById('edit_title').value);
+  formData.append('company', document.getElementById('edit_company').value);
+  formData.append('location', document.getElementById('edit_location').value);
+  formData.append('salary', document.getElementById('edit_salary').value);
+  formData.append('description', document.getElementById('edit_description').value);
+  formData.append('type', document.getElementById('edit_type').value);
+  formData.append('category', document.getElementById('edit_category').value);
+  if (document.getElementById('edit_women_friendly').checked) formData.append('is_women_friendly', 'on');
+  if (document.getElementById('edit_is_active').checked) formData.append('is_active', 'on');
+  fetch(`/adminpanel/jobs/${id}/edit/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCsrf() },
+    body: formData
+  })
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('editJobModal').classList.remove('active');
+    showToast(data.message, 'success');
+    setTimeout(() => window.location.reload(), 1000);
+  })
+  .catch(() => showToast('Failed to update job', 'error'));
+}
+
+function deleteJob(id, btn) {
+  if (!confirm('Delete this job permanently?')) return;
+  fetch(`/adminpanel/jobs/${id}/delete/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCsrf() }
+  })
+  .then(r => r.json())
+  .then(data => {
+    btn.closest('tr')?.remove();
+    showToast(data.message, 'success');
+  })
+  .catch(() => showToast('Failed to delete job', 'error'));
+}
+
+// Modal open/close via data attributes
+document.querySelectorAll('[data-modal-open]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById(btn.dataset.modalOpen)?.classList.add('active');
+  });
+});
+document.querySelectorAll('[data-modal-close]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById(btn.dataset.modalClose)?.classList.remove('active');
+  });
+});
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,177 @@
+{% extends 'layouts/dashboard_layout.html' %}
+{% load static %}
+{% block title %}Job — {{ job.title|default:'Job Details' }}{% endblock %}
+{% block page_title %}Job Details{% endblock %}
+{% block page_subtitle %}Review and apply for this opportunity{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl">
+
+  <!-- Left: Main Details -->
+  <div class="lg:col-span-2 space-y-5">
+
+    <!-- Hero Card -->
+    <div class="card p-6">
+      <div class="flex items-start gap-4">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/20 flex items-center justify-center text-3xl flex-shrink-0">
+          {{ job.company_logo|default:'💼' }}
+        </div>
+        <div class="flex-1">
+          <h1 class="font-display font-bold text-2xl mb-1">{{ job.title|default:'Senior Data Scientist' }}</h1>
+          <p class="text-gray-500 dark:text-gray-400 font-medium">{{ job.company|default:'TCS' }} · {{ job.location|default:'Bangalore, India' }}</p>
+          <div class="flex flex-wrap gap-2 mt-3">
+            <span class="badge badge-purple">{{ job.type|default:'Full-time' }}</span>
+            <span class="badge badge-blue">{{ job.category|default:'Technology' }}</span>
+            {% if job.is_women_friendly %}<span class="badge badge-pink">♀ Women-Friendly</span>{% else %}<span class="badge badge-pink">♀ Women-Friendly</span>{% endif %}
+            <span class="badge badge-green">{{ job.experience|default:'3–5 years' }}</span>
+          </div>
+        </div>
+        <button id="saveJobBtn" onclick="toggleSave(this)" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-white/10 flex items-center justify-center {% if saved %}text-pink-500 bg-pink-50{% else %}text-gray-400 hover:text-pink-500 hover:bg-pink-50{% endif %} transition flex-shrink-0">
+          <i data-lucide="heart" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Quick Info Row -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5 pt-5 border-t border-gray-100 dark:border-white/10">
+        <div><p class="text-xs text-gray-400 mb-0.5">Salary</p><p class="font-bold text-purple-600">{{ job.salary|default:'₹18–25 LPA' }}</p></div>
+        <div><p class="text-xs text-gray-400 mb-0.5">Posted</p><p class="font-semibold text-sm">{{ job.posted_at|timesince|default:'2 days' }} ago</p></div>
+        <div><p class="text-xs text-gray-400 mb-0.5">Applicants</p><p class="font-semibold text-sm">{{ job.applicants|default:'48' }}</p></div>
+        <div><p class="text-xs text-gray-400 mb-0.5">Deadline</p><p class="font-semibold text-sm text-red-500">{{ job.deadline|date:'d M Y'|default:'31 Aug 2025' }}</p></div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="card p-6">
+      <h3 class="font-display font-bold text-lg mb-4">Job Description</h3>
+      <div class="text-sm text-gray-600 dark:text-gray-400 space-y-3 leading-relaxed">
+        {{ job.description|default:'<p>We are looking for an experienced Senior Data Scientist to join our growing AI team. You will work on real-world machine learning problems, build production-grade models, and mentor junior team members.</p><p class="mt-2">This is a hybrid role with excellent growth opportunities and a supportive, inclusive work culture.</p>'|safe }}
+      </div>
+    </div>
+
+    <!-- Responsibilities -->
+    <div class="card p-6">
+      <h3 class="font-display font-bold text-lg mb-4">Key Responsibilities</h3>
+      <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+        {% for r in job.responsibilities %}
+        <li class="flex items-start gap-2"><span class="text-purple-500 mt-0.5">▸</span> {{ r }}</li>
+        {% empty %}
+        <li class="flex items-start gap-2"><span class="text-purple-500 mt-0.5">▸</span> Design and implement end-to-end ML pipelines for production deployment</li>
+        <li class="flex items-start gap-2"><span class="text-purple-500 mt-0.5">▸</span> Collaborate with product and engineering teams to integrate AI models</li>
+        <li class="flex items-start gap-2"><span class="text-purple-500 mt-0.5">▸</span> Conduct A/B tests and interpret experimental results</li>
+        <li class="flex items-start gap-2"><span class="text-purple-500 mt-0.5">▸</span> Mentor junior data scientists and contribute to team knowledge</li>
+        <li class="flex items-start gap-2"><span class="text-purple-500 mt-0.5">▸</span> Stay up to date with the latest ML research and technologies</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Requirements -->
+    <div class="card p-6">
+      <h3 class="font-display font-bold text-lg mb-4">Requirements</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <p class="font-semibold text-sm mb-2 text-purple-600">Must Have</p>
+          <ul class="space-y-1.5 text-sm text-gray-600 dark:text-gray-400">
+            {% for r in job.required_skills %}
+            <li class="flex items-start gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"></i> {{ r }}</li>
+            {% empty %}
+            <li class="flex items-start gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"></i> 3+ years in Python, ML/DL</li>
+            <li class="flex items-start gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"></i> TensorFlow / PyTorch</li>
+            <li class="flex items-start gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"></i> SQL and data pipelines</li>
+            <li class="flex items-start gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"></i> Bachelor's in CS / Statistics</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div>
+          <p class="font-semibold text-sm mb-2 text-pink-600">Nice to Have</p>
+          <ul class="space-y-1.5 text-sm text-gray-600 dark:text-gray-400">
+            <li class="flex items-start gap-2"><i data-lucide="plus-circle" class="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5"></i> NLP / LLM experience</li>
+            <li class="flex items-start gap-2"><i data-lucide="plus-circle" class="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5"></i> Cloud (AWS / GCP)</li>
+            <li class="flex items-start gap-2"><i data-lucide="plus-circle" class="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5"></i> Publications or Kaggle</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Apply + Company Card -->
+  <div class="space-y-4">
+
+    <!-- Apply Card -->
+    <div class="card p-5 sticky top-20">
+      <div class="text-center mb-4">
+        <p class="text-2xl font-bold gradient-text">{{ job.salary|default:'₹18–25 LPA' }}</p>
+        <p class="text-xs text-gray-400 mt-0.5">Per Annum</p>
+      </div>
+      {% if applied %}
+      <div class="text-center py-3 mb-3 bg-green-50 dark:bg-green-900/20 rounded-2xl text-green-700 dark:text-green-400 font-semibold text-sm">
+        ✓ Already Applied
+      </div>
+      {% else %}
+      <a href="{% url 'apply_job' pk=job.id|default:1 %}" class="btn-primary w-full py-3 block text-center mb-3">Apply Now</a>
+      {% endif %}
+      <button class="btn-outline w-full py-2.5 text-sm" onclick="toggleSave(document.getElementById('saveJobBtn'))">
+        Save for Later
+      </button>
+
+      <!-- Job Info -->
+      <div class="mt-4 pt-4 border-t border-gray-100 dark:border-white/10 space-y-3 text-sm">
+        <div class="flex items-center gap-2 text-gray-500"><i data-lucide="building-2" class="w-4 h-4 text-purple-400"></i> {{ job.company|default:'TCS' }}</div>
+        <div class="flex items-center gap-2 text-gray-500"><i data-lucide="map-pin" class="w-4 h-4 text-purple-400"></i> {{ job.location|default:'Bangalore (Hybrid)' }}</div>
+        <div class="flex items-center gap-2 text-gray-500"><i data-lucide="briefcase" class="w-4 h-4 text-purple-400"></i> {{ job.type|default:'Full-time' }}</div>
+        <div class="flex items-center gap-2 text-gray-500"><i data-lucide="calendar" class="w-4 h-4 text-purple-400"></i> Deadline: {{ job.deadline|date:'d M Y'|default:'31 Aug 2025' }}</div>
+      </div>
+    </div>
+
+    <!-- Similar Jobs -->
+    <div class="card p-5">
+      <h3 class="font-semibold mb-3">Similar Jobs</h3>
+      <div class="space-y-3">
+        {% for sj in similar_jobs %}
+        <a href="{% url 'job_detail' pk=sj.id %}" class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition">
+          <div class="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-sm flex-shrink-0">{{ sj.icon|default:'💼' }}</div>
+          <div class="flex-1 min-w-0"><p class="font-medium text-sm truncate">{{ sj.title }}</p><p class="text-xs text-gray-400 truncate">{{ sj.company }}</p></div>
+        </a>
+        {% empty %}
+        <a href="{% url 'jobs' %}" class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition">
+          <div class="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center text-sm flex-shrink-0">📊</div>
+          <div><p class="font-medium text-sm">ML Engineer</p><p class="text-xs text-gray-400">Google India</p></div>
+        </a>
+        <a href="{% url 'jobs' %}" class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition">
+          <div class="w-9 h-9 rounded-xl bg-pink-100 flex items-center justify-center text-sm flex-shrink-0">🤖</div>
+          <div><p class="font-medium text-sm">AI Research Scientist</p><p class="text-xs text-gray-400">Microsoft</p></div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function toggleSave(btn) {
+  fetch(`/jobs/{{ job.id }}/save/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'saved') {
+      const heartBtn = document.getElementById('saveJobBtn');
+      if (heartBtn) {
+        heartBtn.classList.add('text-pink-500', 'bg-pink-50');
+        heartBtn.classList.remove('text-gray-400');
+      }
+      Toast?.success('❤️ Job saved successfully!');
+    } else if (data.status === 'already_saved') {
+      Toast?.info('Job is already saved!');
+    }
+  })
+  .catch(err => {
+    Toast?.error('Failed to save job.');
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,335 @@
+{% extends base_layout|default:'layouts/dashboard_layout.html' %}
+{% load static %}
+{% block title %}My Profile{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+{% block page_subtitle %}Manage your personal information{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-4xl" id="tabGroup">
+
+  <!-- ── Profile Header Card ── -->
+  <div class="card p-6 lg:p-8">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+      <!-- Avatar -->
+      <div class="relative group flex-shrink-0">
+        <img id="avatarPreview"
+             src="{% if user.profile_photo %}{{ user.profile_photo.url }}{% else %}https://ui-avatars.com/api/?name={{ user.first_name|urlencode }}+{{ user.last_name|urlencode }}&background=7C3AED&color=fff&size=120{% endif %}"
+             alt="Profile" class="avatar w-28 h-28 lg:w-32 lg:h-32"/>
+        <label for="photoInput" class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition">
+          <i data-lucide="camera" class="w-6 h-6 text-white"></i>
+        </label>
+        <input id="photoInput" type="file" accept="image/*" class="hidden" onchange="previewPhoto(this)"/>
+        <div class="absolute bottom-0 right-0 w-8 h-8 gradient-bg rounded-full flex items-center justify-center border-2 border-white cursor-pointer" onclick="document.getElementById('photoInput').click()">
+          <i data-lucide="pencil" class="w-3.5 h-3.5 text-white"></i>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div class="flex-1">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div>
+            <h2 class="font-display font-bold text-2xl">{{ user.get_full_name|default:'Your Name' }}</h2>
+            <p class="text-gray-500 dark:text-gray-400">{{ user.email }}</p>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            <span class="badge badge-purple">{{ user.role|default:'User'|capfirst }}</span>
+            {% if user.is_verified %}<span class="badge badge-green">✓ Verified</span>{% endif %}
+          </div>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
+          {% if user.phone %}<span class="flex items-center gap-1"><i data-lucide="phone" class="w-4 h-4"></i> {{ user.phone }}</span>{% endif %}
+          {% if user.city %}<span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-4 h-4"></i> {{ user.city }}</span>{% endif %}
+          <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-4 h-4"></i> Joined {{ user.date_joined|date:'M Y' }}</span>
+        </div>
+        <!-- Profile completion -->
+        <div class="mt-4 max-w-xs">
+          <div class="flex justify-between text-xs mb-1 text-gray-500">
+            <span>Profile Completion</span><span class="font-bold text-purple-600">{{ profile_completion|default:'75' }}%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" data-progress="{{ profile_completion|default:'75' }}" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <a href="#" onclick="switchTab('editTab')" class="btn-primary flex items-center gap-2 flex-shrink-0">
+        <i data-lucide="edit-2" class="w-4 h-4"></i> Edit Profile
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Tabs ── -->
+  <div class="flex gap-2 overflow-x-auto pb-1" id="profileTabs">
+    <button data-tab="viewTab" onclick="switchTab('viewTab')" id="tabBtnView"
+            class="px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap border-2 border-purple-600 text-purple-600 bg-purple-50 dark:bg-purple-900/20 transition">
+      View Profile
+    </button>
+    <button data-tab="editTab" onclick="switchTab('editTab')" id="tabBtnEdit"
+            class="px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap border-2 border-transparent text-gray-500 hover:border-purple-300 transition">
+      Edit Profile
+    </button>
+    <button data-tab="educationTab" onclick="switchTab('educationTab')" id="tabBtnEducation"
+            class="px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap border-2 border-transparent text-gray-500 hover:border-purple-300 transition">
+      Education
+    </button>
+    <button data-tab="skillsTab" onclick="switchTab('skillsTab')" id="tabBtnSkills"
+            class="px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap border-2 border-transparent text-gray-500 hover:border-purple-300 transition">
+      Skills
+    </button>
+    <button data-tab="resumeTab" onclick="switchTab('resumeTab')" id="tabBtnResume"
+            class="px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap border-2 border-transparent text-gray-500 hover:border-purple-300 transition">
+      Resume
+    </button>
+  </div>
+
+  <!-- ── VIEW PROFILE TAB ── -->
+  <div id="viewTab">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div class="card p-5">
+        <h3 class="font-semibold mb-4 flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-purple-500"></i> Personal Info</h3>
+        <dl class="space-y-3 text-sm">
+          <div class="flex"><dt class="w-36 text-gray-400 flex-shrink-0">Full Name</dt><dd class="font-medium">{{ user.get_full_name|default:'—' }}</dd></div>
+          <div class="flex"><dt class="w-36 text-gray-400 flex-shrink-0">Email</dt><dd class="font-medium">{{ user.email|default:'—' }}</dd></div>
+          <div class="flex"><dt class="w-36 text-gray-400 flex-shrink-0">Phone</dt><dd class="font-medium">{{ user.phone|default:'—' }}</dd></div>
+          <div class="flex"><dt class="w-36 text-gray-400 flex-shrink-0">Date of Birth</dt><dd class="font-medium">{{ user.dob|date:'d M Y'|default:'—' }}</dd></div>
+          <div class="flex"><dt class="w-36 text-gray-400 flex-shrink-0">City</dt><dd class="font-medium">{{ user.city|default:'—' }}</dd></div>
+          <div class="flex"><dt class="w-36 text-gray-400 flex-shrink-0">Bio</dt><dd class="font-medium">{{ user.bio|default:'No bio added yet.' }}</dd></div>
+        </dl>
+      </div>
+      <div class="card p-5">
+        <h3 class="font-semibold mb-4 flex items-center gap-2"><i data-lucide="activity" class="w-4 h-4 text-purple-500"></i> Activity Stats</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-2xl">
+            <p class="text-2xl font-bold gradient-text">{{ sessions_booked|default:'4' }}</p>
+            <p class="text-xs text-gray-500 mt-1">Mentor Sessions</p>
+          </div>
+          <div class="text-center p-3 bg-pink-50 dark:bg-pink-900/20 rounded-2xl">
+            <p class="text-2xl font-bold text-pink-600">{{ jobs_applied|default:'12' }}</p>
+            <p class="text-xs text-gray-500 mt-1">Jobs Applied</p>
+          </div>
+          <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-2xl">
+            <p class="text-2xl font-bold text-green-600">{{ schol_applied|default:'3' }}</p>
+            <p class="text-xs text-gray-500 mt-1">Scholarships</p>
+          </div>
+          <div class="text-center p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl">
+            <p class="text-2xl font-bold text-indigo-600">{{ resources_saved|default:'8' }}</p>
+            <p class="text-xs text-gray-500 mt-1">Resources Saved</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EDIT PROFILE TAB ── -->
+  <div id="editTab" class="hidden">
+    <div class="card p-6">
+      <h3 class="font-display font-bold text-lg mb-5">Edit Personal Information</h3>
+      <form method="POST" action="{% url 'profile_edit' %}" enctype="multipart/form-data" data-validate-form class="space-y-5">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label" for="ef_first">First Name</label>
+            <input id="ef_first" name="first_name" type="text" class="form-input" value="{{ user.first_name }}" data-validate="required"/>
+          </div>
+          <div>
+            <label class="form-label" for="ef_last">Last Name</label>
+            <input id="ef_last" name="last_name" type="text" class="form-input" value="{{ user.last_name }}" data-validate="required"/>
+          </div>
+        </div>
+        <div>
+          <label class="form-label" for="ef_email">Email Address</label>
+          <input id="ef_email" name="email" type="email" class="form-input" value="{{ user.email }}" data-validate="required|email"/>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label" for="ef_phone">Phone</label>
+            <input id="ef_phone" name="phone" type="tel" class="form-input" value="{{ user.phone }}" data-validate="phone"/>
+          </div>
+          <div>
+            <label class="form-label" for="ef_dob">Date of Birth</label>
+            <input id="ef_dob" name="dob" type="date" class="form-input" value="{{ user.dob|date:'Y-m-d' }}"/>
+          </div>
+        </div>
+        <div>
+          <label class="form-label" for="ef_city">City</label>
+          <input id="ef_city" name="city" type="text" class="form-input" value="{{ user.city }}" placeholder="Mumbai, India"/>
+        </div>
+        <div>
+          <label class="form-label" for="ef_bio">Bio</label>
+          <textarea id="ef_bio" name="bio" rows="3" class="form-input resize-none" placeholder="Write a short bio about yourself…">{{ user.bio }}</textarea>
+        </div>
+        <div>
+          <label class="form-label" for="ef_photo">Profile Photo</label>
+          <div class="upload-zone" onclick="document.getElementById('ef_photo').click()">
+            <i data-lucide="upload-cloud" class="w-8 h-8 text-purple-400 mx-auto mb-2"></i>
+            <p class="text-sm text-gray-500">Click or drag photo here</p>
+            <p class="text-xs text-gray-400 mt-1">PNG, JPG up to 5MB</p>
+          </div>
+          <input id="ef_photo" name="profile_photo" type="file" accept="image/*" class="hidden" onchange="previewPhoto(this)"/>
+        </div>
+        <div class="flex gap-3">
+          <button type="submit" class="btn-primary px-8">Save Changes</button>
+          <button type="button" onclick="switchTab('viewTab')" class="btn-outline px-8">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── EDUCATION TAB ── -->
+  <div id="educationTab" class="hidden">
+    <div class="card p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="font-display font-bold text-lg">Education</h3>
+        <button class="btn-primary text-sm py-2 px-4 flex items-center gap-1.5" data-modal-open="addEduModal">
+          <i data-lucide="plus" class="w-4 h-4"></i> Add
+        </button>
+      </div>
+      <div class="space-y-4">
+        {% for edu in education %}
+        <div class="flex items-start gap-4 p-4 border border-gray-100 dark:border-purple-900/30 rounded-2xl">
+          <div class="w-11 h-11 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="graduation-cap" class="w-5 h-5 text-purple-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="font-bold">{{ edu.degree }}</p>
+            <p class="text-sm text-gray-500">{{ edu.institution }}</p>
+            <p class="text-xs text-gray-400 mt-0.5">{{ edu.start_year }} – {{ edu.end_year|default:'Present' }}</p>
+          </div>
+          <span class="badge badge-purple">{{ edu.grade }}</span>
+        </div>
+        {% empty %}
+        <div class="flex items-start gap-4 p-4 border border-gray-100 dark:border-purple-900/30 rounded-2xl">
+          <div class="w-11 h-11 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="graduation-cap" class="w-5 h-5 text-purple-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="font-bold">B.Tech Computer Science</p>
+            <p class="text-sm text-gray-500">SPPU University, Pune</p>
+            <p class="text-xs text-gray-400 mt-0.5">2020 – 2024</p>
+          </div>
+          <span class="badge badge-green">8.5 CGPA</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SKILLS TAB ── -->
+  <div id="skillsTab" class="hidden">
+    <div class="card p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="font-display font-bold text-lg">Skills</h3>
+        <button class="btn-primary text-sm py-2 px-4 flex items-center gap-1.5" data-modal-open="addSkillModal">
+          <i data-lucide="plus" class="w-4 h-4"></i> Add Skill
+        </button>
+      </div>
+      <div class="flex flex-wrap gap-2" id="skillsContainer">
+        {% for skill in skills %}
+        <span class="skill-tag group cursor-pointer">
+          {{ skill.name }}
+          <button class="ml-1.5 text-purple-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition" onclick="removeSkill(this)">×</button>
+        </span>
+        {% empty %}
+        <span class="skill-tag">Python</span>
+        <span class="skill-tag">Machine Learning</span>
+        <span class="skill-tag">Django</span>
+        <span class="skill-tag">Data Analysis</span>
+        <span class="skill-tag">React</span>
+        <span class="skill-tag">SQL</span>
+        {% endfor %}
+      </div>
+      <div class="mt-5 flex gap-2">
+        <input id="newSkillInput" type="text" class="form-input flex-1 text-sm" placeholder="Add a skill (e.g. Python)"/>
+        <button onclick="addSkill()" class="btn-primary text-sm py-2 px-4">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RESUME TAB ── -->
+  <div id="resumeTab" class="hidden">
+    <div class="card p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="font-display font-bold text-lg">Resume & Documents</h3>
+      </div>
+      {% if user.resume %}
+      <div class="flex items-center gap-4 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-2xl mb-5">
+        <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+          <i data-lucide="file-text" class="w-6 h-6 text-red-500"></i>
+        </div>
+        <div class="flex-1">
+          <p class="font-semibold">{{ user.resume_filename|default:'resume.pdf' }}</p>
+          <p class="text-xs text-gray-400">Uploaded {{ user.resume_uploaded|timesince }} ago</p>
+        </div>
+        <a href="{{ user.resume.url }}" download class="btn-outline text-xs py-1.5 px-3">Download</a>
+      </div>
+      {% endif %}
+      <form method="POST" action="{% url 'upload_resume' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="upload-zone" onclick="document.getElementById('resumeInput').click()">
+          <i data-lucide="file-plus" class="w-10 h-10 text-purple-400 mx-auto mb-3"></i>
+          <p class="font-semibold text-gray-700 dark:text-gray-300">Upload Your Resume</p>
+          <p class="text-sm text-gray-400 mt-1">PDF, DOCX up to 10MB</p>
+          <p id="resumeFileName" class="mt-2 text-purple-600 font-medium text-sm"></p>
+        </div>
+        <input id="resumeInput" name="resume" type="file" accept=".pdf,.docx,.doc" class="hidden"
+               onchange="document.getElementById('resumeFileName').textContent = this.files[0]?.name || ''"/>
+        <div class="flex gap-3 mt-4">
+          <button type="submit" class="btn-primary flex-1">Upload Resume</button>
+          <a href="{% url 'resume_review' %}" class="btn-outline flex-1 text-center">AI Review</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<!-- Add Education Modal -->
+<div id="addEduModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-display font-bold text-xl">Add Education</h3>
+      <button data-modal-close="addEduModal" class="text-gray-400 hover:text-red-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <form method="POST" action="{% url 'add_education' %}" class="space-y-4">
+      {% csrf_token %}
+      <div><label class="form-label">Degree / Certificate</label><input type="text" name="degree" class="form-input" placeholder="B.Tech Computer Science"/></div>
+      <div><label class="form-label">Institution</label><input type="text" name="institution" class="form-input" placeholder="University Name"/></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="form-label">Start Year</label><input type="number" name="start_year" class="form-input" placeholder="2020"/></div>
+        <div><label class="form-label">End Year</label><input type="number" name="end_year" class="form-input" placeholder="2024"/></div>
+      </div>
+      <div><label class="form-label">Grade / CGPA</label><input type="text" name="grade" class="form-input" placeholder="8.5 CGPA"/></div>
+      <button type="submit" class="btn-primary w-full py-3">Save Education</button>
+    </form>
+  </div>
+</div>
+
+<script>
+function switchTab(id) {
+  ['viewTab','editTab','educationTab','skillsTab','resumeTab'].forEach(t => {
+    document.getElementById(t)?.classList.add('hidden');
+    const btn = document.getElementById('tabBtn' + t.replace('Tab','').replace(/^./, c => c.toUpperCase()));
+    if(btn){ btn.classList.remove('border-purple-600','text-purple-600','bg-purple-50','dark:bg-purple-900/20'); btn.classList.add('border-transparent','text-gray-500'); }
+  });
+  document.getElementById(id)?.classList.remove('hidden');
+  const activeBtn = document.getElementById('tabBtn' + id.replace('Tab','').replace(/^./, c => c.toUpperCase()));
+  if(activeBtn){ activeBtn.classList.add('border-purple-600','text-purple-600','bg-purple-50'); activeBtn.classList.remove('border-transparent','text-gray-500'); }
+}
+function previewPhoto(input) {
+  if(input.files[0]) {
+    const r = new FileReader();
+    r.onload = e => { const p = document.getElementById('avatarPreview'); if(p) p.src = e.target.result; };
+    r.readAsDataURL(input.files[0]);
+  }
+}
+function addSkill() {
+  const inp = document.getElementById('newSkillInput');
+  const val = inp.value.trim();
+  if(!val) return;
+  const span = document.createElement('span');
+  span.className = 'skill-tag group cursor-pointer';
+  span.innerHTML = `${val}<button class="ml-1.5 text-purple-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition" onclick="removeSkill(this)">×</button>`;
+  document.getElementById('skillsContainer').appendChild(span);
+  inp.value = '';
+}
+function removeSkill(btn) { btn.parentElement.remove(); }
+</script>
+{% endblock %}

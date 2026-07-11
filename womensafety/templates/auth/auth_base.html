@@ -1,0 +1,85 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="SheShield AI — Women Safety & Career Empowerment Platform" />
+  <title>{% block title %}SheShield AI{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {
+        colors: { primary: { DEFAULT:'#7C3AED',light:'#A78BFA',dark:'#5B21B6' }, secondary: { DEFAULT:'#EC4899',light:'#F9A8D4' } },
+        fontFamily: { sans:['Inter','sans-serif'], display:['Poppins','sans-serif'] }
+      }}
+    };
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{% static 'css/custom.css' %}"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50 dark:from-[#0F0A1E] dark:via-[#130D26] dark:to-[#0A0612]">
+
+  <!-- ── TOP NAV BAR ── -->
+  <nav class="fixed top-0 inset-x-0 z-50 h-16 flex items-center justify-between px-6 navbar">
+    <a href="{% url 'home' %}" class="flex items-center gap-2.5 no-underline">
+      <div class="w-9 h-9 rounded-xl gradient-bg flex items-center justify-center shadow-lg">
+        <span class="text-white font-bold text-lg">S</span>
+      </div>
+      <span class="font-display font-bold text-xl gradient-text">SheShield AI</span>
+    </a>
+    <div class="flex items-center gap-3">
+      <button data-dark-toggle-btn class="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-300 hover:bg-purple-100 transition">
+        <span data-dark-icon>🌙</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── AUTH WRAPPER ── -->
+  <div class="flex min-h-screen pt-16">
+    <!-- Left Panel (desktop) -->
+    <div class="hidden lg:flex lg:w-1/2 gradient-bg flex-col items-center justify-center p-12 relative overflow-hidden">
+      <!-- Decorative circles -->
+      <div class="absolute top-10 left-10 w-64 h-64 rounded-full bg-white/10 blur-3xl"></div>
+      <div class="absolute bottom-20 right-10 w-80 h-80 rounded-full bg-pink-300/20 blur-3xl"></div>
+      <div class="relative z-10 text-white text-center">
+        <div class="w-24 h-24 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/30">
+          <span class="text-5xl">🛡️</span>
+        </div>
+        <h1 class="font-display font-bold text-4xl mb-4 leading-tight">
+          {% block auth_heading %}Welcome to SheShield AI{% endblock %}
+        </h1>
+        <p class="text-purple-100 text-lg mb-8 max-w-sm mx-auto">
+          {% block auth_subheading %}Your AI-powered companion for safety, career growth, and empowerment.{% endblock %}
+        </p>
+        <div class="flex flex-col gap-4 max-w-xs mx-auto">
+          <div class="glass rounded-2xl p-4 flex items-center gap-3 text-left">
+            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0"><span class="text-xl">🚨</span></div>
+            <div><p class="font-semibold text-sm">One-tap SOS Alert</p><p class="text-purple-200 text-xs">Instant emergency notification</p></div>
+          </div>
+          <div class="glass rounded-2xl p-4 flex items-center gap-3 text-left">
+            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0"><span class="text-xl">🤖</span></div>
+            <div><p class="font-semibold text-sm">AI Career Coach</p><p class="text-purple-200 text-xs">Personalized guidance & roadmaps</p></div>
+          </div>
+          <div class="glass rounded-2xl p-4 flex items-center gap-3 text-left">
+            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0"><span class="text-21">🎓</span></div>
+            <div><p class="font-semibold text-sm">Mentor Network</p><p class="text-purple-200 text-xs">Connect with industry experts</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel — Form -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
+      <div class="w-full max-w-md">
+        {% block auth_form %}{% endblock %}
+      </div>
+    </div>
+  </div>
+
+  <script>if(window.lucide)lucide.createIcons();</script>
+  <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

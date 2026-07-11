@@ -1,0 +1,89 @@
+{% extends 'layouts/dashboard_layout.html' %}
+{% load static %}
+{% block title %}Scholarships{% endblock %}
+{% block page_title %}Scholarships{% endblock %}
+{% block page_subtitle %}Funding opportunities for women{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Search -->
+  <div class="card p-4">
+    <div class="flex flex-col sm:flex-row gap-3">
+      <div class="search-bar flex-1">
+        <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+        <input id="scholSearch" type="search" placeholder="Search scholarships…"/>
+      </div>
+      <select class="form-input w-full sm:w-44 text-sm">
+        <option>All Categories</option><option>STEM</option><option>Arts</option><option>Medicine</option><option>Law</option>
+      </select>
+      <select class="form-input w-full sm:w-44 text-sm">
+        <option>All Levels</option><option>Undergraduate</option><option>Postgraduate</option><option>PhD</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Scholarship Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" id="scholGrid">
+    <!-- Demo scholarships -->
+    {% for s in scholarships %}
+    <div class="card p-5 schol-item" data-aos>
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-12 h-12 rounded-2xl {{ s.bg_class|default:'gradient-bg' }} flex items-center justify-center text-2xl flex-shrink-0">{{ s.icon|default:'🎓' }}</div>
+        <div>
+          <h4 class="font-bold text-sm leading-tight">{{ s.name }}</h4>
+          <p class="text-xs text-gray-400">{{ s.provider }}</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-1.5 mb-3">
+        <span class="badge badge-purple text-xs">{{ s.category }}</span>
+        <span class="badge badge-blue text-xs">{{ s.level }}</span>
+      </div>
+      <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">{{ s.description }}</p>
+      <div class="flex items-center justify-between text-sm mb-4">
+        <div><p class="text-xs text-gray-400">Amount</p><p class="font-bold text-purple-600">{{ s.amount }}</p></div>
+        <div class="text-right"><p class="text-xs text-gray-400">Deadline</p><p class="font-bold text-red-600 text-xs">{{ s.deadline|date:'d M Y' }}</p></div>
+      </div>
+      <a href="{% url 'scholarship_detail' pk=s.id %}" class="btn-primary block text-center text-sm py-2.5">Apply Now</a>
+    </div>
+    {% empty %}
+    <!-- Hard-coded demos -->
+    <div class="card p-5 schol-item" data-aos>
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-12 h-12 rounded-2xl gradient-bg flex items-center justify-center text-2xl flex-shrink-0">🎓</div>
+        <div><h4 class="font-bold text-sm leading-tight">Women in Technology Scholarship 2025</h4><p class="text-xs text-gray-400">Google India</p></div>
+      </div>
+      <div class="flex flex-wrap gap-1.5 mb-3"><span class="badge badge-purple text-xs">STEM</span><span class="badge badge-blue text-xs">Undergraduate</span></div>
+      <p class="text-sm text-gray-500 line-clamp-2 mb-3">Supports women pursuing Computer Science or Engineering degrees. Includes mentorship and internship opportunities.</p>
+      <div class="flex items-center justify-between mb-4"><div><p class="text-xs text-gray-400">Amount</p><p class="font-bold text-purple-600">₹1,00,000/year</p></div><div class="text-right"><p class="text-xs text-gray-400">Deadline</p><p class="font-bold text-red-600 text-xs">31 Aug 2025</p></div></div>
+      <button class="btn-primary w-full text-sm py-2.5">Apply Now</button>
+    </div>
+    <div class="card p-5 schol-item" data-aos>
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-12 h-12 rounded-2xl bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center text-2xl flex-shrink-0">💊</div>
+        <div><h4 class="font-bold text-sm leading-tight">Inspire Scholarship for Medical Sciences</h4><p class="text-xs text-gray-400">Govt. of India – DST</p></div>
+      </div>
+      <div class="flex flex-wrap gap-1.5 mb-3"><span class="badge badge-pink text-xs">Medicine</span><span class="badge badge-blue text-xs">Postgraduate</span></div>
+      <p class="text-sm text-gray-500 line-clamp-2 mb-3">Government scholarship for women pursuing MBBS, BDS, or allied health science programs.</p>
+      <div class="flex items-center justify-between mb-4"><div><p class="text-xs text-gray-400">Amount</p><p class="font-bold text-purple-600">₹80,000/year</p></div><div class="text-right"><p class="text-xs text-gray-400">Deadline</p><p class="font-bold text-red-600 text-xs">15 Sep 2025</p></div></div>
+      <button class="btn-primary w-full text-sm py-2.5">Apply Now</button>
+    </div>
+    <div class="card p-5 schol-item" data-aos>
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-2xl flex-shrink-0">⚖️</div>
+        <div><h4 class="font-bold text-sm leading-tight">Tata Trust Women in Law Scholarship</h4><p class="text-xs text-gray-400">Tata Education Trust</p></div>
+      </div>
+      <div class="flex flex-wrap gap-1.5 mb-3"><span class="badge badge-blue text-xs">Law</span><span class="badge badge-purple text-xs">Postgraduate</span></div>
+      <p class="text-sm text-gray-500 line-clamp-2 mb-3">Supporting women pursuing LLB, LLM or specializations in human rights, corporate, or criminal law.</p>
+      <div class="flex items-center justify-between mb-4"><div><p class="text-xs text-gray-400">Amount</p><p class="font-bold text-purple-600">₹1,50,000/year</p></div><div class="text-right"><p class="text-xs text-gray-400">Deadline</p><p class="font-bold text-red-600 text-xs">30 Sep 2025</p></div></div>
+      <button class="btn-primary w-full text-sm py-2.5">Apply Now</button>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+<script>
+document.getElementById('scholSearch')?.addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.schol-item').forEach(el => { el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none'; });
+});
+</script>
+{% endblock %}

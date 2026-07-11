@@ -1,0 +1,238 @@
+{% extends 'layouts/dashboard_layout.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Welcome back, {{ request.user.first_name|default:'Friend' }} 👋{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- ── WELCOME BANNER ── -->
+  <div class="relative overflow-hidden rounded-3xl gradient-bg p-6 lg:p-8 text-white">
+    <div class="absolute top-0 right-0 w-72 h-72 rounded-full bg-white/10 -translate-y-1/2 translate-x-1/4 blur-2xl"></div>
+    <div class="absolute bottom-0 left-1/2 w-48 h-48 rounded-full bg-pink-300/20 translate-y-1/2 blur-2xl"></div>
+    <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div>
+        <p class="text-purple-200 text-sm font-medium mb-1">🌟 Good {{ greeting }},</p>
+        <h2 class="font-display font-bold text-2xl lg:text-3xl mb-2">{{ request.user.get_full_name|default:'Empowered Woman' }}</h2>
+        <p class="text-purple-100 text-sm max-w-md">Your safety score is <strong class="text-white">{{ safety_score|default:'87' }}%</strong>. You have {{ pending_jobs|default:'3' }} new job matches and {{ new_mentors|default:'2' }} mentor requests today.</p>
+      </div>
+      <div class="flex gap-3 flex-shrink-0">
+        <a href="{% url 'sos' %}" class="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold px-5 py-3 rounded-2xl shadow-lg transition">
+          <i data-lucide="alert-triangle" class="w-5 h-5"></i> SOS
+        </a>
+        <a href="{% url 'career_chat' %}" class="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-semibold px-5 py-3 rounded-2xl backdrop-blur-sm transition">
+          <i data-lucide="bot" class="w-5 h-5"></i> AI Coach
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STAT CARDS ROW ── -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+    <!-- Safety Status -->
+    <div class="card p-5" data-aos>
+      <div class="flex items-center justify-between mb-3">
+        <div class="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+          <i data-lucide="shield-check" class="w-5 h-5 text-green-600"></i>
+        </div>
+        <span class="badge badge-green">Safe</span>
+      </div>
+      <p class="text-2xl font-bold font-display">{{ safety_score|default:'87' }}%</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Safety Score</p>
+      <div class="progress-bar mt-3">
+        <div class="progress-fill bg-green-500" data-progress="{{ safety_score|default:'87' }}" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Emergency Contacts -->
+    <div class="card p-5" data-aos>
+      <div class="flex items-center justify-between mb-3">
+        <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+          <i data-lucide="phone-call" class="w-5 h-5 text-purple-600"></i>
+        </div>
+        <a href="{% url 'emergency_contacts' %}" class="text-xs text-purple-600 hover:underline">Manage →</a>
+      </div>
+      <p class="text-2xl font-bold font-display" data-counter="{{ emergency_contacts_count|default:'5' }}">0</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Emergency Contacts</p>
+    </div>
+
+    <!-- Mentors -->
+    <div class="card p-5" data-aos>
+      <div class="flex items-center justify-between mb-3">
+        <div class="w-10 h-10 rounded-xl bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center">
+          <i data-lucide="users" class="w-5 h-5 text-pink-600"></i>
+        </div>
+        <a href="{% url 'mentors' %}" class="text-xs text-purple-600 hover:underline">View →</a>
+      </div>
+      <p class="text-2xl font-bold font-display" data-counter="{{ mentors_count|default:'12' }}">0</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Active Mentors</p>
+    </div>
+
+    <!-- Jobs -->
+    <div class="card p-5" data-aos>
+      <div class="flex items-center justify-between mb-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+          <i data-lucide="briefcase" class="w-5 h-5 text-indigo-600"></i>
+        </div>
+        <a href="{% url 'jobs' %}" class="text-xs text-purple-600 hover:underline">Browse →</a>
+      </div>
+      <p class="text-2xl font-bold font-display" data-counter="{{ jobs_count|default:'48' }}">0</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Job Openings</p>
+    </div>
+  </div>
+
+  <!-- ── SECOND ROW: Quick Actions + SOS + Scholarships ── -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Quick Action Cards -->
+    <div class="lg:col-span-2 card p-6">
+      <h3 class="font-display font-bold text-lg mb-4">Quick Actions</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {% for action in quick_actions|default:'' %}
+        <a href="{{ action.url }}" class="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gradient-to-br {{ action.gradient }} hover:scale-105 transition-transform cursor-pointer text-center">
+          <span class="text-2xl">{{ action.icon }}</span>
+          <span class="text-sm font-semibold">{{ action.label }}</span>
+        </a>
+        {% empty %}
+        <!-- Demo quick actions -->
+        <a href="{% url 'sos' %}" class="flex flex-col items-center gap-2 p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 hover:scale-105 transition-transform text-center">
+          <span class="text-2xl">🆘</span><span class="text-sm font-semibold text-red-700 dark:text-red-400">SOS Alert</span>
+        </a>
+        <a href="{% url 'live_location' %}" class="flex flex-col items-center gap-2 p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 hover:scale-105 transition-transform text-center">
+          <span class="text-2xl">📍</span><span class="text-sm font-semibold text-blue-700 dark:text-blue-400">Share Location</span>
+        </a>
+        <a href="{% url 'safe_route' %}" class="flex flex-col items-center gap-2 p-4 rounded-2xl bg-green-50 dark:bg-green-900/20 hover:scale-105 transition-transform text-center">
+          <span class="text-2xl">🗺️</span><span class="text-sm font-semibold text-green-700 dark:text-green-400">Safe Route</span>
+        </a>
+        <a href="{% url 'career_chat' %}" class="flex flex-col items-center gap-2 p-4 rounded-2xl bg-purple-50 dark:bg-purple-900/20 hover:scale-105 transition-transform text-center">
+          <span class="text-2xl">🤖</span><span class="text-sm font-semibold text-purple-700 dark:text-purple-400">AI Career Chat</span>
+        </a>
+        <a href="{% url 'mentors' %}" class="flex flex-col items-center gap-2 p-4 rounded-2xl bg-pink-50 dark:bg-pink-900/20 hover:scale-105 transition-transform text-center">
+          <span class="text-2xl">👩‍🏫</span><span class="text-sm font-semibold text-pink-700 dark:text-pink-400">Find Mentor</span>
+        </a>
+        <a href="{% url 'resume_review' %}" class="flex flex-col items-center gap-2 p-4 rounded-2xl bg-yellow-50 dark:bg-yellow-900/20 hover:scale-105 transition-transform text-center">
+          <span class="text-2xl">📄</span><span class="text-sm font-semibold text-yellow-700 dark:text-yellow-400">Review Resume</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- SOS & Scholarships -->
+    <div class="flex flex-col gap-4">
+      <!-- SOS Card -->
+      <div class="card p-6 text-center bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/10 dark:to-rose-900/10 border-red-200 dark:border-red-900/30">
+        <p class="text-sm font-semibold text-red-700 dark:text-red-400 mb-3">Hold for Emergency SOS</p>
+        <div class="flex justify-center mb-3">
+          <button id="sosBtn" class="sos-btn">
+            SOS
+            <span id="sosCountdown" class="block text-sm font-normal opacity-80"></span>
+          </button>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Hold 5 seconds to activate</p>
+      </div>
+
+      <!-- Scholarships -->
+      <div class="card p-5 flex-1">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-display font-semibold">Scholarships</h3>
+          <a href="{% url 'scholarships' %}" class="text-xs text-purple-600 hover:underline">View all →</a>
+        </div>
+        <p class="text-3xl font-bold gradient-text" data-counter="{{ scholarships_count|default:'24' }}">0</p>
+        <p class="text-xs text-gray-500 mt-1">Active scholarships available</p>
+        <a href="{% url 'scholarships' %}" class="mt-3 btn-primary text-sm py-2 w-full block text-center">Explore Now</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── THIRD ROW: Recent Notifications + Career Progress ── -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Recent Notifications -->
+    <div class="card p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display font-bold text-lg">Recent Notifications</h3>
+        <a href="{% url 'notifications' %}" class="text-xs text-purple-600 hover:underline">View all</a>
+      </div>
+      <div class="space-y-3">
+        {% for notif in notifications|default:'' %}
+        <div class="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition {% if not notif.is_read %}bg-purple-50 dark:bg-purple-900/10{% endif %}">
+          <div class="w-9 h-9 rounded-full gradient-bg flex items-center justify-center text-white text-sm flex-shrink-0">{{ notif.icon|default:'🔔' }}</div>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-sm">{{ notif.title }}</p>
+            <p class="text-xs text-gray-400 mt-0.5">{{ notif.created_at|timesince }} ago</p>
+          </div>
+          {% if not notif.is_read %}<span class="notif-dot flex-shrink-0 mt-1"></span>{% endif %}
+        </div>
+        {% empty %}
+        <!-- Demo Notifications -->
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-purple-50 dark:bg-purple-900/10">
+          <div class="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center text-sm flex-shrink-0">🚨</div>
+          <div class="flex-1"><p class="font-medium text-sm">SOS Alert test completed</p><p class="text-xs text-gray-400 mt-0.5">2 minutes ago</p></div>
+          <span class="notif-dot flex-shrink-0 mt-1"></span>
+        </div>
+        <div class="flex items-start gap-3 p-3 rounded-xl">
+          <div class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center text-sm flex-shrink-0">✅</div>
+          <div class="flex-1"><p class="font-medium text-sm">Resume reviewed — 3 tips added</p><p class="text-xs text-gray-400 mt-0.5">1 hour ago</p></div>
+        </div>
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-purple-50 dark:bg-purple-900/10">
+          <div class="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center text-sm flex-shrink-0">🎓</div>
+          <div class="flex-1"><p class="font-medium text-sm">New scholarship: Women in Tech 2025</p><p class="text-xs text-gray-400 mt-0.5">3 hours ago</p></div>
+          <span class="notif-dot flex-shrink-0 mt-1"></span>
+        </div>
+        <div class="flex items-start gap-3 p-3 rounded-xl">
+          <div class="w-9 h-9 rounded-full bg-pink-100 flex items-center justify-center text-sm flex-shrink-0">👩‍🏫</div>
+          <div class="flex-1"><p class="font-medium text-sm">Mentor Priya accepted your request</p><p class="text-xs text-gray-400 mt-0.5">5 hours ago</p></div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Career Progress -->
+    <div class="card p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display font-bold text-lg">Career Progress</h3>
+        <a href="{% url 'career_roadmap' %}" class="text-xs text-purple-600 hover:underline">Full roadmap</a>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span class="font-medium">Profile Completion</span>
+            <span class="text-purple-600 font-semibold">75%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" data-progress="75" style="width:0%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span class="font-medium">Skills Assessed</span>
+            <span class="text-purple-600 font-semibold">60%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" data-progress="60" style="width:0%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span class="font-medium">Interview Readiness</span>
+            <span class="text-purple-600 font-semibold">40%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" data-progress="40" style="width:0%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span class="font-medium">Resume Strength</span>
+            <span class="text-purple-600 font-semibold">85%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" data-progress="85" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="mt-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/10 rounded-2xl">
+        <p class="text-sm font-semibold text-purple-700 dark:text-purple-300">🎯 Next Step</p>
+        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Complete your skills assessment to unlock personalized job recommendations.</p>
+        <a href="{% url 'career_chat' %}" class="mt-2 inline-block text-xs font-bold text-purple-600 hover:underline">Start Assessment →</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

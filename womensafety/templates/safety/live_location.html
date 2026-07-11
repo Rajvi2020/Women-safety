@@ -1,0 +1,208 @@
+{% extends 'layouts/dashboard_layout.html' %}
+{% load static %}
+{% block title %}Live Location{% endblock %}
+{% block page_title %}Live Location{% endblock %}
+{% block page_subtitle %}Share your real-time location with trusted contacts{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Status Bar -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="card p-4 flex items-center gap-3">
+      <div class="w-11 h-11 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+        <i data-lucide="shield-check" class="w-5 h-5 text-green-600"></i>
+      </div>
+      <div>
+        <p class="text-xs text-gray-400">Status</p>
+        <p class="font-bold text-green-600" id="trackingStatus">Tracking Active</p>
+      </div>
+      <label class="toggle ml-auto">
+        <input type="checkbox" id="trackingToggle" checked onchange="toggleTracking(this)"/>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="card p-4 flex items-center gap-3">
+      <div class="w-11 h-11 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+        <i data-lucide="map-pin" class="w-5 h-5 text-purple-600"></i>
+      </div>
+      <div>
+        <p class="text-xs text-gray-400">Coordinates</p>
+        <p class="font-bold text-sm" id="coordsDisplay">Fetching...</p>
+      </div>
+    </div>
+    <div class="card p-4 flex items-center gap-3">
+      <div class="w-11 h-11 bg-pink-100 dark:bg-pink-900/30 rounded-xl flex items-center justify-center">
+        <i data-lucide="users" class="w-5 h-5 text-pink-600"></i>
+      </div>
+      <div>
+        <p class="text-xs text-gray-400">Shared With</p>
+        <p class="font-bold">{{ shared_with_count|default:'3' }} contacts</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Map -->
+    <div class="lg:col-span-2 card overflow-hidden">
+      <div class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-white/10">
+        <h3 class="font-semibold flex items-center gap-2">
+          <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Live Map
+        </h3>
+        <div class="flex gap-2">
+          <button onclick="shareLocation()" class="btn-primary text-xs py-1.5 px-3 flex items-center gap-1">
+            <i data-lucide="share-2" class="w-3.5 h-3.5"></i> Share Link
+          </button>
+          <a href="{% url 'safe_route' %}" class="btn-outline text-xs py-1.5 px-3">Safe Route</a>
+        </div>
+      </div>
+      <!-- Leaflet Map Container -->
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+      <div class="relative bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20" style="height:420px;">
+        <div id="liveMapEl" class="w-full h-full" style="height:420px; z-index: 1;"></div>
+        <!-- Last updated -->
+        <div class="absolute bottom-3 left-3 bg-white/90 dark:bg-gray-900/90 text-xs px-3 py-1.5 rounded-xl text-gray-500 backdrop-blur-sm z-[1000]">
+          Last updated: <span id="lastUpdated">Just now</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sharing Panel -->
+    <div class="space-y-4">
+
+      <!-- Share with Contacts -->
+      <div class="card p-5">
+        <h3 class="font-semibold mb-4">Sharing With</h3>
+        <div class="space-y-3" id="sharingList">
+          {% for contact in shared_contacts %}
+          <div class="flex items-center gap-3 p-2 rounded-xl">
+            <img src="https://ui-avatars.com/api/?name={{ contact.name }}&background=7C3AED&color=fff&size=36" class="avatar w-9 h-9"/>
+            <div class="flex-1">
+              <p class="font-medium text-sm">{{ contact.name }}</p>
+              <p class="text-xs text-gray-400">{{ contact.relation }}</p>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" checked onchange="toggleShare('{{ contact.id }}', this)"/>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          {% empty %}
+          <div class="flex items-center gap-3 p-2 rounded-xl">
+            <img src="https://ui-avatars.com/api/?name=Meera+S&background=7C3AED&color=fff&size=36" class="avatar w-9 h-9"/>
+            <div class="flex-1"><p class="font-medium text-sm">Meera Sharma</p><p class="text-xs text-gray-400">Mother</p></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl">
+            <img src="https://ui-avatars.com/api/?name=Rajiv+K&background=EC4899&color=fff&size=36" class="avatar w-9 h-9"/>
+            <div class="flex-1"><p class="font-medium text-sm">Rajiv Kumar</p><p class="text-xs text-gray-400">Father</p></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl">
+            <img src="https://ui-avatars.com/api/?name=Priya+R&background=6366F1&color=fff&size=36" class="avatar w-9 h-9"/>
+            <div class="flex-1"><p class="font-medium text-sm">Priya Rao</p><p class="text-xs text-gray-400">Best Friend</p></div>
+            <label class="toggle"><input type="checkbox"/><span class="toggle-slider"></span></label>
+          </div>
+          {% endfor %}
+        </div>
+        <button class="btn-outline w-full mt-3 text-sm py-2" onclick="Toast.success('Location link copied!')">
+          <i data-lucide="link" class="w-4 h-4 inline mr-1"></i> Copy Share Link
+        </button>
+      </div>
+
+      <!-- Location History -->
+      <div class="card p-5">
+        <h3 class="font-semibold mb-3 flex items-center justify-between">
+          Location History
+          <button class="text-xs text-red-500 hover:underline">Clear All</button>
+        </h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-purple-500 flex-shrink-0"></i>
+            <div class="flex-1 truncate">Koregaon Park, Pune</div>
+            <span class="text-xs text-gray-400 flex-shrink-0">Now</span>
+          </div>
+          <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-gray-400 flex-shrink-0"></i>
+            <div class="flex-1 truncate">FC Road, Pune</div>
+            <span class="text-xs text-gray-400 flex-shrink-0">1h ago</span>
+          </div>
+          <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-gray-400 flex-shrink-0"></i>
+            <div class="flex-1 truncate">Shivajinagar, Pune</div>
+            <span class="text-xs text-gray-400 flex-shrink-0">3h ago</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+let liveMap;
+let liveMarker;
+
+function initLiveMap(lat, lng) {
+  if (liveMap) return;
+  liveMap = L.map('liveMapEl').setView([lat, lng], 15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(liveMap);
+  
+  liveMarker = L.marker([lat, lng]).addTo(liveMap)
+    .bindPopup('<b>Your Current Live Location</b>')
+    .openPopup();
+}
+
+function updateMarkerLocation(lat, lng) {
+  if (liveMarker) {
+    liveMarker.setLatLng([lat, lng]);
+    liveMap.setView([lat, lng]);
+  } else {
+    initLiveMap(lat, lng);
+  }
+}
+
+function toggleTracking(inp) {
+  const status = document.getElementById('trackingStatus');
+  status.textContent = inp.checked ? 'Tracking Active' : 'Tracking Paused';
+  status.className = inp.checked ? 'font-bold text-green-600' : 'font-bold text-gray-400';
+  Toast.info(inp.checked ? '📍 Location tracking resumed' : '⏸️ Location tracking paused');
+}
+function shareLocation() {
+  if(navigator.clipboard) {
+    navigator.clipboard.writeText(window.location.origin + '/location/live/?token=abc123');
+    Toast.success('🔗 Share link copied to clipboard!');
+  }
+}
+function centerMap() {
+  if (liveMap && liveMarker) {
+    liveMap.setView(liveMarker.getLatLng(), 16);
+    Toast.success('Map centered to your location');
+  } else {
+    Toast.info('Map centered to your location');
+  }
+}
+// Geolocation
+if(navigator.geolocation) {
+  navigator.geolocation.watchPosition(pos => {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    document.getElementById('coordsDisplay').textContent = `${lat.toFixed(5)}°N, ${lng.toFixed(5)}°E`;
+    document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+    updateMarkerLocation(lat, lng);
+  }, () => {
+    const defaultLat = 18.5204;
+    const defaultLng = 73.8567;
+    document.getElementById('coordsDisplay').textContent = `${defaultLat}°N, ${defaultLng}°E`;
+    updateMarkerLocation(defaultLat, defaultLng);
+  });
+} else {
+  document.getElementById('coordsDisplay').textContent = 'Not available';
+  initLiveMap(18.5204, 73.8567);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,170 @@
+{% extends 'layouts/admin_layout.html' %}
+{% load static %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- ── Stat Cards ── -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="stat-card text-white" style="background:linear-gradient(135deg,#7C3AED,#5B21B6);">
+      <p class="text-purple-200 text-xs font-semibold uppercase tracking-wider mb-2">Total Users</p>
+      <p class="text-3xl font-bold" data-counter="{{ total_users|default:'2847' }}">0</p>
+      <p class="text-purple-200 text-xs mt-1">↑ +23 this week</p>
+    </div>
+    <div class="stat-card text-white" style="background:linear-gradient(135deg,#EC4899,#BE185D);">
+      <p class="text-pink-200 text-xs font-semibold uppercase tracking-wider mb-2">Total SOS Alerts</p>
+      <p class="text-3xl font-bold" data-counter="{{ total_sos_alerts|default:'148' }}">0</p>
+      <p class="text-pink-200 text-xs mt-1">All-time emergency signals</p>
+    </div>
+    <div class="stat-card text-white" style="background:linear-gradient(135deg,#6366F1,#4338CA);">
+      <p class="text-indigo-200 text-xs font-semibold uppercase tracking-wider mb-2">SOS Alerts (Today)</p>
+      <p class="text-3xl font-bold" data-counter="{{ sos_today|default:'7' }}">0</p>
+      <p class="text-indigo-200 text-xs mt-1">{{ sos_resolved|default:'5' }} resolved</p>
+    </div>
+    <div class="stat-card text-white" style="background:linear-gradient(135deg,#0EA5E9,#0284C7);">
+      <p class="text-sky-200 text-xs font-semibold uppercase tracking-wider mb-2">Active Jobs</p>
+      <p class="text-3xl font-bold" data-counter="{{ active_jobs|default:'284' }}">0</p>
+      <p class="text-sky-200 text-xs mt-1">↑ +18 this week</p>
+    </div>
+  </div>
+
+  <!-- ── Charts Row ── -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- User Growth Chart (mock) -->
+    <div class="lg:col-span-2 card p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display font-bold text-lg">User Registration</h3>
+        <select class="form-input w-32 text-sm py-1.5">
+          <option>Last 7 days</option><option>Last 30 days</option><option>Last 3 months</option>
+        </select>
+      </div>
+      <!-- Mock bar chart -->
+      <div class="flex items-end gap-2 h-40">
+        {% for d, h in chart_data %}
+        <div class="flex-1 flex flex-col items-center gap-1">
+          <div class="w-full rounded-t-lg gradient-bg opacity-80 transition-all hover:opacity-100 dyn-bar" data-height="{{ h|default:'60' }}"></div>
+          <span class="text-xs text-gray-400">{{ d|default:'Mon' }}</span>
+        </div>
+        {% empty %}
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full rounded-t-lg gradient-bg" style="height:40%"></div><span class="text-xs text-gray-400">Mon</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full rounded-t-lg gradient-bg" style="height:65%"></div><span class="text-xs text-gray-400">Tue</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full rounded-t-lg gradient-bg" style="height:80%"></div><span class="text-xs text-gray-400">Wed</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full rounded-t-lg gradient-bg" style="height:55%"></div><span class="text-xs text-gray-400">Thu</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full rounded-t-lg gradient-bg" style="height:90%"></div><span class="text-xs text-gray-400">Fri</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full rounded-t-lg gradient-bg" style="height:70%"></div><span class="text-xs text-gray-400">Sat</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full rounded-t-lg gradient-bg" style="height:45%"></div><span class="text-xs text-gray-400">Sun</span></div>
+        {% endfor %}
+      </div>
+    </div>
+    <script>document.querySelectorAll('.dyn-bar').forEach(b => b.style.height = b.dataset.height + '%');</script>
+
+    <!-- Quick Stats -->
+    <div class="card p-6 space-y-4">
+      <h3 class="font-display font-bold text-lg">Platform Stats</h3>
+      <div>
+        <div class="flex justify-between text-sm mb-1"><span>SOS Alerts Today</span><span class="font-bold">{{ sos_today|default:'0' }}</span></div>
+        <div class="progress-bar"><div class="progress-fill" data-progress="40" style="width:0%"></div></div>
+      </div>
+      <div>
+        <div class="flex justify-between text-sm mb-1"><span>Job Applications</span><span class="font-bold">{{ applications|default:'1,284' }}</span></div>
+        <div class="progress-bar"><div class="progress-fill" data-progress="85" style="width:0%"></div></div>
+      </div>
+      <div>
+        <div class="flex justify-between text-sm mb-1"><span>Scholarship Applications</span><span class="font-bold">{{ schol_apps|default:'384' }}</span></div>
+        <div class="progress-bar"><div class="progress-fill" data-progress="45" style="width:0%"></div></div>
+      </div>
+      <div>
+        <div class="flex justify-between text-sm mb-1"><span>Resources Accessed</span><span class="font-bold">{{ resources_accessed|default:'5.2K' }}</span></div>
+        <div class="progress-bar"><div class="progress-fill" data-progress="91" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Recent Data Tables ── -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Recent Users -->
+    <div class="card p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display font-bold text-lg">Recent Users</h3>
+        <a href="{% url 'admin_users' %}" class="text-xs text-purple-600 hover:underline">View all</a>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="data-table">
+          <thead><tr><th>User</th><th>Role</th><th>Joined</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for user in recent_users %}
+            <tr>
+              <td>
+                <div class="flex items-center gap-2">
+                  <img src="https://ui-avatars.com/api/?name={{ user.first_name }}&background=7C3AED&color=fff&size=32" class="avatar w-8 h-8"/>
+                  <div><p class="font-medium text-sm">{{ user.get_full_name }}</p><p class="text-xs text-gray-400">{{ user.email }}</p></div>
+                </div>
+              </td>
+              <td><span class="badge badge-purple text-xs">{{ user.role }}</span></td>
+              <td class="text-sm text-gray-500">{{ user.date_joined|date:'d M' }}</td>
+              <td><span class="badge {% if user.is_active %}badge-green{% else %}badge-red{% endif %} text-xs">{% if user.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">
+              <div class="flex items-center gap-2 py-2">
+                <img src="https://ui-avatars.com/api/?name=Priya+S&background=7C3AED&color=fff&size=32" class="avatar w-8 h-8"/>
+                <div><p class="font-medium text-sm">Priya Sharma</p><p class="text-xs text-gray-400">priya@email.com</p></div>
+              </div>
+            </td><td><span class="badge badge-purple text-xs">User</span></td><td class="text-sm text-gray-500">10 Jul</td><td><span class="badge badge-green text-xs">Active</span></td></tr>
+            <tr><td>
+              <div class="flex items-center gap-2">
+                <img src="https://ui-avatars.com/api/?name=Anjali+R&background=EC4899&color=fff&size=32" class="avatar w-8 h-8"/>
+                <div><p class="font-medium text-sm">Anjali Rao</p><p class="text-xs text-gray-400">anjali@email.com</p></div>
+              </div>
+            </td><td><span class="badge badge-pink text-xs">Mentor</span></td><td class="text-sm text-gray-500">09 Jul</td><td><span class="badge badge-green text-xs">Active</span></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SOS Monitoring -->
+    <div class="card p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display font-bold text-lg text-red-600">🚨 SOS Monitoring</h3>
+        <a href="{% url 'admin_sos' %}" class="text-xs text-purple-600 hover:underline">View all</a>
+      </div>
+      <div class="space-y-3">
+        {% for sos in recent_sos %}
+        <div class="flex items-center gap-3 p-3 rounded-xl {% if sos.status == 'active' %}bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-900/40{% else %}bg-gray-50 dark:bg-white/5{% endif %}">
+          <div class="w-9 h-9 rounded-xl {% if sos.status == 'active' %}bg-red-100 dark:bg-red-900/40{% else %}bg-green-100 dark:bg-green-900/30{% endif %} flex items-center justify-center">
+            <i data-lucide="{% if sos.status == 'active' %}alert-triangle{% else %}check-circle{% endif %}" class="w-4 h-4 {% if sos.status == 'active' %}text-red-600{% else %}text-green-600{% endif %}"></i>
+          </div>
+          <div class="flex-1"><p class="font-medium text-sm">{{ sos.user.get_full_name }}</p><p class="text-xs text-gray-400">{{ sos.location }} · {{ sos.created_at|timesince }} ago</p></div>
+          <span class="badge {% if sos.status == 'active' %}badge-red{% else %}badge-green{% endif %} text-xs">{{ sos.status|capfirst }}</span>
+        </div>
+        {% empty %}
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-900/40">
+          <div class="w-9 h-9 bg-red-100 rounded-xl flex items-center justify-center"><i data-lucide="alert-triangle" class="w-4 h-4 text-red-600"></i></div>
+          <div class="flex-1"><p class="font-medium text-sm">Sneha Patil</p><p class="text-xs text-gray-400">Pune, MH · 12 min ago</p></div>
+          <span class="badge badge-red text-xs">Active</span>
+        </div>
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-white/5">
+          <div class="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center"><i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i></div>
+          <div class="flex-1"><p class="font-medium text-sm">Riya Mehta</p><p class="text-xs text-gray-400">Mumbai, MH · 2 hr ago</p></div>
+          <span class="badge badge-green text-xs">Resolved</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function getCsrf() { return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''; }
+function showToast(msg, type='info') {
+  const t = document.createElement('div'); t.className = `toast show ${type}`; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3000);
+}
+</script>
+{% endblock %}

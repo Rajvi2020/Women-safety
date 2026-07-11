@@ -1,0 +1,210 @@
+{% extends 'layouts/dashboard_layout.html' %}
+{% load static %}
+{% block title %}Mentor — {{ mentor.name|default:'Mentor Profile' }}{% endblock %}
+{% block page_title %}Mentor Profile{% endblock %}
+{% block page_subtitle %}Connect and book a session{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-5xl">
+
+  <!-- Profile Hero -->
+  <div class="card p-6 lg:p-8">
+    <div class="flex flex-col sm:flex-row gap-6">
+      <img src="{% if mentor.photo %}{{ mentor.photo.url }}{% else %}https://ui-avatars.com/api/?name={{ mentor.name|default:'Mentor'|urlencode }}&background=7C3AED&color=fff&size=120{% endif %}"
+           alt="{{ mentor.name|default:'Mentor' }}" class="avatar w-28 h-28 lg:w-32 lg:h-32 flex-shrink-0"/>
+      <div class="flex-1">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap mb-1">
+              <h1 class="font-display font-bold text-2xl">{{ mentor.name|default:'Dr. Priya Sharma' }}</h1>
+              <span class="badge badge-green text-xs">✓ Verified</span>
+              {% if mentor.is_online %}<span class="badge bg-green-100 text-green-700 text-xs">● Online</span>{% endif %}
+            </div>
+            <p class="text-gray-500 dark:text-gray-400">{{ mentor.title|default:'Senior Data Scientist' }} · {{ mentor.company|default:'Google India' }}</p>
+            <div class="flex items-center gap-1 mt-2">
+              {% for s in "12345" %}<span class="text-yellow-400 text-base">★</span>{% endfor %}
+              <span class="text-sm text-gray-400 ml-1">{{ mentor.rating|default:'4.9' }} ({{ mentor.review_count|default:'127' }} reviews)</span>
+            </div>
+          </div>
+          <button class="btn-primary flex items-center gap-2 flex-shrink-0" data-modal-open="bookModal">
+            <i data-lucide="calendar" class="w-4 h-4"></i> Book Session
+          </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-4 mt-5 pt-5 border-t border-gray-100 dark:border-white/10">
+          <div class="text-center">
+            <p class="text-2xl font-bold gradient-text" data-counter="{{ mentor.sessions_count|default:'412' }}">0</p>
+            <p class="text-xs text-gray-400 mt-0.5">Sessions Done</p>
+          </div>
+          <div class="text-center">
+            <p class="text-2xl font-bold gradient-text">{{ mentor.experience|default:'10' }}+</p>
+            <p class="text-xs text-gray-400 mt-0.5">Years Exp.</p>
+          </div>
+          <div class="text-center">
+            <p class="text-2xl font-bold gradient-text">{{ mentor.response_rate|default:'98' }}%</p>
+            <p class="text-xs text-gray-400 mt-0.5">Response Rate</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Left: Bio + Skills + Reviews -->
+    <div class="lg:col-span-2 space-y-5">
+
+      <!-- About -->
+      <div class="card p-6">
+        <h3 class="font-display font-bold text-lg mb-3">About</h3>
+        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+          {{ mentor.bio|default:'With over 10 years of experience in data science and machine learning at Google, I am passionate about helping women break into the tech industry. I have mentored 400+ professionals and guided them in landing roles at top companies like Amazon, Microsoft, and Flipkart. I specialise in ML/AI career transitions, resume building, and interview preparation.' }}
+        </p>
+      </div>
+
+      <!-- Expertise -->
+      <div class="card p-6">
+        <h3 class="font-display font-bold text-lg mb-3">Areas of Expertise</h3>
+        <div class="flex flex-wrap gap-2">
+          {% for skill in mentor.skills.all %}
+          <span class="skill-tag">{{ skill.name }}</span>
+          {% empty %}
+          <span class="skill-tag">Machine Learning</span>
+          <span class="skill-tag">Python</span>
+          <span class="skill-tag">Deep Learning</span>
+          <span class="skill-tag">Career Coaching</span>
+          <span class="skill-tag">Resume Building</span>
+          <span class="skill-tag">Interview Prep</span>
+          <span class="skill-tag">AI/ML</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Reviews -->
+      <div class="card p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-display font-bold text-lg">Reviews</h3>
+          <span class="badge badge-green">{{ mentor.rating|default:'4.9' }} ★</span>
+        </div>
+        <div class="space-y-4">
+          {% for review in mentor.reviews.all %}
+          <div class="border-b border-gray-100 dark:border-white/10 pb-4 last:border-0 last:pb-0">
+            <div class="flex items-center gap-3 mb-2">
+              <img src="https://ui-avatars.com/api/?name={{ review.user.first_name }}&background=EC4899&color=fff&size=32" class="avatar w-8 h-8"/>
+              <div>
+                <p class="font-semibold text-sm">{{ review.user.get_full_name }}</p>
+                <div class="flex gap-0.5">{% for s in "12345" %}<span class="text-yellow-400 text-xs">★</span>{% endfor %}</div>
+              </div>
+              <span class="ml-auto text-xs text-gray-400">{{ review.created_at|date:'d M Y' }}</span>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ review.comment }}</p>
+          </div>
+          {% empty %}
+          <div class="pb-4 border-b border-gray-100 dark:border-white/10">
+            <div class="flex items-center gap-3 mb-2">
+              <img src="https://ui-avatars.com/api/?name=Ananya+K&background=EC4899&color=fff&size=32" class="avatar w-8 h-8"/>
+              <div><p class="font-semibold text-sm">Ananya Kapoor</p><div class="flex gap-0.5">{% for s in "12345" %}<span class="text-yellow-400 text-xs">★</span>{% endfor %}</div></div>
+              <span class="ml-auto text-xs text-gray-400">5 Jul 2025</span>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Dr. Priya helped me completely restructure my resume and land a Data Analyst role at Infosys. Her practical advice and mock interviews were invaluable. Highly recommended!</p>
+          </div>
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <img src="https://ui-avatars.com/api/?name=Sneha+M&background=7C3AED&color=fff&size=32" class="avatar w-8 h-8"/>
+              <div><p class="font-semibold text-sm">Sneha Mehta</p><div class="flex gap-0.5">{% for s in "1234" %}<span class="text-yellow-400 text-xs">★</span>{% endfor %}<span class="text-gray-300 text-xs">★</span></div></div>
+              <span class="ml-auto text-xs text-gray-400">2 Jul 2025</span>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Really knowledgeable mentor. Gave me a clear 6-month roadmap to transition from software testing to ML. Would love another session.</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Booking Card + Availability -->
+    <div class="space-y-4">
+      <div class="card p-5">
+        <h3 class="font-semibold mb-4">Book a Session</h3>
+        <div class="space-y-3 text-sm mb-5">
+          <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+            <i data-lucide="video" class="w-4 h-4 text-purple-500"></i> Video Call Available
+          </div>
+          <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+            <i data-lucide="message-square" class="w-4 h-4 text-purple-500"></i> Chat Available
+          </div>
+          <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+            <i data-lucide="clock" class="w-4 h-4 text-purple-500"></i> 45–60 min sessions
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500">Session Fee</span>
+            <span class="font-bold text-purple-600">{{ mentor.fee|default:'₹500' }} / session</span>
+          </div>
+        </div>
+        <button class="btn-primary w-full py-3 mb-3" data-modal-open="bookModal">Book Now</button>
+        <button class="btn-outline w-full py-2.5 text-sm flex items-center justify-center gap-2"
+                onclick="window.location=`{% url 'career_chat' %}`">
+          <i data-lucide="message-circle" class="w-4 h-4"></i> Send Message
+        </button>
+      </div>
+
+      <!-- Availability -->
+      <div class="card p-5">
+        <h3 class="font-semibold mb-3">Availability This Week</h3>
+        <div class="space-y-2 text-sm">
+          {% for slot in mentor.availability %}
+          <div class="flex justify-between items-center p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5">
+            <span class="text-gray-600 dark:text-gray-400">{{ slot.day }}</span>
+            <span class="badge {% if slot.available %}badge-green{% else %}badge-red{% endif %} text-xs">{{ slot.time|default:'Available' }}</span>
+          </div>
+          {% empty %}
+          <div class="flex justify-between items-center p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5"><span class="text-gray-600">Monday</span><span class="badge badge-green text-xs">10 AM – 2 PM</span></div>
+          <div class="flex justify-between items-center p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5"><span class="text-gray-600">Wednesday</span><span class="badge badge-green text-xs">3 PM – 6 PM</span></div>
+          <div class="flex justify-between items-center p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5"><span class="text-gray-600">Friday</span><span class="badge badge-green text-xs">11 AM – 1 PM</span></div>
+          <div class="flex justify-between items-center p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5"><span class="text-gray-600">Saturday</span><span class="badge badge-red text-xs">Unavailable</span></div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Book Session Modal -->
+<div id="bookModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-display font-bold text-xl">Book a Session</h3>
+      <button data-modal-close="bookModal" class="text-gray-400 hover:text-red-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <form method="POST" action="{% url 'book_session' %}" class="space-y-4">
+      {% csrf_token %}
+      <input type="hidden" name="mentor_id" value="{{ mentor.id|default:'1' }}"/>
+      <div>
+        <label class="form-label">Session Type</label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="flex items-center gap-2 p-3 border-2 border-gray-200 dark:border-purple-900/40 rounded-xl cursor-pointer hover:border-purple-400 transition has-[:checked]:border-purple-600 has-[:checked]:bg-purple-50 dark:has-[:checked]:bg-purple-900/20">
+            <input type="radio" name="session_type" value="video" checked class="accent-purple-600"/> <span class="text-sm font-medium">📹 Video Call</span>
+          </label>
+          <label class="flex items-center gap-2 p-3 border-2 border-gray-200 dark:border-purple-900/40 rounded-xl cursor-pointer hover:border-purple-400 transition has-[:checked]:border-purple-600 has-[:checked]:bg-purple-50">
+            <input type="radio" name="session_type" value="chat" class="accent-purple-600"/> <span class="text-sm font-medium">💬 Chat</span>
+          </label>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="form-label">Date</label><input type="date" name="date" class="form-input text-sm" min="{% now 'Y-m-d' %}"/></div>
+        <div><label class="form-label">Time</label>
+          <select name="time_slot" class="form-input text-sm">
+            <option>10:00 AM</option><option>11:00 AM</option><option>12:00 PM</option>
+            <option>2:00 PM</option><option>3:00 PM</option><option>4:00 PM</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">What do you need help with?</label>
+        <textarea name="notes" rows="3" class="form-input resize-none text-sm" placeholder="E.g., Resume review, ML career guidance, interview prep…"></textarea>
+      </div>
+      <button type="submit" class="btn-primary w-full py-3">✓ Confirm Booking</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
