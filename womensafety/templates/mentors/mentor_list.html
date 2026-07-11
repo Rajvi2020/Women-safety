@@ -1,0 +1,142 @@
+{% extends 'layouts/dashboard_layout.html' %}
+{% load static %}
+{% block title %}Mentors{% endblock %}
+{% block page_title %}Mentor Network{% endblock %}
+{% block page_subtitle %}Connect with experienced professionals{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- ── Filter Bar ── -->
+  <div class="card p-4">
+    <div class="flex flex-col sm:flex-row gap-3">
+      <div class="search-bar flex-1">
+        <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+        <input id="mentorSearch" type="search" placeholder="Search mentors by name or skill…"/>
+      </div>
+      <select class="form-input w-full sm:w-44 text-sm" id="fieldFilter">
+        <option value="">All Fields</option>
+        <option>Technology</option><option>Healthcare</option><option>Finance</option>
+        <option>Education</option><option>Law</option><option>Entrepreneurship</option>
+      </select>
+      <select class="form-input w-full sm:w-44 text-sm" id="availFilter">
+        <option value="">Any Availability</option>
+        <option value="online">Online</option>
+        <option value="offline">In-person</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ── Mentor Grid ── -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5" id="mentorGrid">
+    {% for mentor in mentors %}
+    {% include 'components/mentor_card.html' with mentor=mentor %}
+    {% empty %}
+    <!-- Demo mentor cards -->
+    {% for i in "123456" %}
+    <div class="card p-5 mentor-item" data-aos>
+      <div class="flex items-start gap-4 mb-4">
+        <img src="https://ui-avatars.com/api/?name=Priya+Sharma&background=7C3AED&color=fff&size=64" class="avatar w-16 h-16" alt="Mentor"/>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h4 class="font-bold">Dr. Priya Sharma</h4>
+            <span class="badge badge-green text-xs">✓ Verified</span>
+          </div>
+          <p class="text-sm text-gray-500 mt-0.5">Senior Data Scientist · Google</p>
+          <div class="flex items-center gap-1 mt-1">
+            {% for s in "12345" %}<i data-lucide="star" class="w-3.5 h-3.5 star fill-current"></i>{% endfor %}
+            <span class="text-xs text-gray-400 ml-1">4.9 (127 reviews)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-1.5 mb-4">
+        <span class="skill-tag text-xs">Machine Learning</span>
+        <span class="skill-tag text-xs">Python</span>
+        <span class="skill-tag text-xs">AI/ML</span>
+      </div>
+
+      <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4">
+        Helping women break into tech with 10+ years at Google. Specialized in ML, AI career paths, and leadership.
+      </p>
+
+      <div class="flex items-center justify-between text-sm mb-4">
+        <div class="flex items-center gap-1.5 text-green-600">
+          <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+          <span class="text-xs font-medium">Available</span>
+        </div>
+        <span class="text-purple-600 font-bold">Free / ₹500 per session</span>
+      </div>
+
+      <div class="flex gap-2">
+        <a href="{% url 'mentor_detail' pk=1 %}" class="btn-outline flex-1 text-sm py-2 text-center">View Profile</a>
+        <button class="btn-primary flex-1 text-sm py-2" data-modal-open="bookSessionModal" onclick="setMentor('Dr. Priya Sharma')">Book Session</button>
+      </div>
+    </div>
+    {% endfor %}
+    {% endfor %}
+  </div>
+
+  <!-- ── Pagination ── -->
+  <div class="flex justify-center gap-2">
+    <button class="page-btn"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+    <button class="page-btn active">1</button>
+    <button class="page-btn">2</button>
+    <button class="page-btn">3</button>
+    <button class="page-btn"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+  </div>
+
+</div>
+
+<!-- Book Session Modal -->
+<div id="bookSessionModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-display font-bold text-xl">Book a Session</h3>
+      <button data-modal-close="bookSessionModal" class="text-gray-400 hover:text-red-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <p class="text-sm text-gray-500 mb-5">with <strong id="mentorName">Mentor</strong></p>
+    <form method="POST" action="{% url 'book_session' %}" class="space-y-4">
+      {% csrf_token %}
+      <input type="hidden" name="mentor_id" id="mentorId"/>
+      <div>
+        <label class="form-label">Session Type</label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="flex items-center gap-2 p-3 border-2 border-gray-200 dark:border-purple-900/40 rounded-xl cursor-pointer hover:border-purple-400 transition has-[:checked]:border-purple-600 has-[:checked]:bg-purple-50 dark:has-[:checked]:bg-purple-900/20">
+            <input type="radio" name="session_type" value="video" class="accent-purple-600"/> <span class="text-sm font-medium">📹 Video Call</span>
+          </label>
+          <label class="flex items-center gap-2 p-3 border-2 border-gray-200 dark:border-purple-900/40 rounded-xl cursor-pointer hover:border-purple-400 transition has-[:checked]:border-purple-600 has-[:checked]:bg-purple-50">
+            <input type="radio" name="session_type" value="chat" class="accent-purple-600"/> <span class="text-sm font-medium">💬 Chat</span>
+          </label>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="form-label">Date</label><input type="date" name="date" class="form-input text-sm"/></div>
+        <div><label class="form-label">Time Slot</label>
+          <select name="time_slot" class="form-input text-sm">
+            <option>10:00 AM</option><option>11:00 AM</option><option>2:00 PM</option><option>4:00 PM</option>
+          </select>
+        </div>
+      </div>
+      <div><label class="form-label">What do you need help with?</label>
+        <textarea name="notes" rows="3" class="form-input resize-none text-sm" placeholder="E.g., Resume review, career switch advice…"></textarea>
+      </div>
+      <button type="submit" class="btn-primary w-full py-3">Confirm Booking</button>
+    </form>
+  </div>
+</div>
+
+<script>
+function setMentor(name, id) {
+  document.getElementById('mentorName').textContent = name;
+  if(id) document.getElementById('mentorId').value = id;
+}
+// Search filter
+document.getElementById('mentorSearch')?.addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.mentor-item').forEach(card => {
+    card.style.display = card.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+</script>
+{% endblock %}

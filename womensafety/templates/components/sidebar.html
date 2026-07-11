@@ -1,0 +1,150 @@
+{% load static %}
+<!-- ══════════════════════════════════════
+     SIDEBAR COMPONENT
+     Usage: {% include 'components/sidebar.html' %}
+══════════════════════════════════════ -->
+
+<!-- Mobile Overlay -->
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<aside id="sidebar" class="sidebar flex flex-col">
+  <!-- Logo -->
+  <div class="flex items-center gap-3 px-5 py-5 border-b border-purple-100 dark:border-purple-900/30">
+    <div class="w-9 h-9 rounded-xl gradient-bg flex items-center justify-center shadow flex-shrink-0">
+      <span class="text-white font-bold text-lg">S</span>
+    </div>
+    <div class="sidebar-text">
+      <p class="font-display font-bold text-base gradient-text leading-tight">SheShield</p>
+      <p class="text-xs text-gray-400">AI Platform</p>
+    </div>
+  </div>
+
+  <!-- User Info -->
+  <div class="flex items-center gap-3 px-4 py-4 mx-3 mt-3 rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/10">
+    <img src="{% if request.user.profile_photo %}{{ request.user.profile_photo.url }}{% else %}https://ui-avatars.com/api/?name={{ request.user.first_name|urlencode }}+{{ request.user.last_name|urlencode }}&background=7C3AED&color=fff{% endif %}"
+         alt="Avatar" class="avatar w-9 h-9"/>
+    <div class="sidebar-text flex-1 min-w-0">
+      <p class="font-semibold text-sm truncate">{{ request.user.get_full_name|default:'Guest User' }}</p>
+      <span class="badge badge-purple text-xs">{{ request.user.role|default:'User'|capfirst }}</span>
+    </div>
+  </div>
+
+  <!-- Nav Links -->
+  <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+
+    <!-- Main -->
+    <p class="sidebar-text text-xs font-bold text-gray-400 uppercase tracking-widest px-3 mb-2">Main</p>
+
+    <a href="{% url 'dashboard' %}" class="sidebar-link" id="navDashboard">
+      <i data-lucide="layout-dashboard" class="icon"></i>
+      <span class="sidebar-text">Dashboard</span>
+    </a>
+
+    <a href="{% url 'profile' %}" class="sidebar-link" id="navProfile">
+      <i data-lucide="user" class="icon"></i>
+      <span class="sidebar-text">My Profile</span>
+    </a>
+
+    <a href="{% url 'notifications' %}" class="sidebar-link relative" id="navNotif">
+      <i data-lucide="bell" class="icon"></i>
+      <span class="sidebar-text">Notifications</span>
+      <span class="ml-auto sidebar-text bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">3</span>
+    </a>
+
+    <!-- Safety -->
+    <div class="section-divider"></div>
+    <p class="sidebar-text text-xs font-bold text-gray-400 uppercase tracking-widest px-3 mb-2">Safety</p>
+
+    <a href="{% url 'sos' %}" class="sidebar-link" id="navSOS">
+      <i data-lucide="alert-triangle" class="icon text-red-500"></i>
+      <span class="sidebar-text">SOS Alert</span>
+    </a>
+
+    <a href="{% url 'emergency_contacts' %}" class="sidebar-link" id="navContacts">
+      <i data-lucide="phone-call" class="icon"></i>
+      <span class="sidebar-text">Emergency Contacts</span>
+    </a>
+
+    <a href="{% url 'live_location' %}" class="sidebar-link" id="navLocation">
+      <i data-lucide="map-pin" class="icon"></i>
+      <span class="sidebar-text">Live Location</span>
+    </a>
+
+    <a href="{% url 'safe_route' %}" class="sidebar-link" id="navRoute">
+      <i data-lucide="navigation" class="icon"></i>
+      <span class="sidebar-text">Safe Routes</span>
+    </a>
+
+    <!-- Career -->
+    <div class="section-divider"></div>
+    <p class="sidebar-text text-xs font-bold text-gray-400 uppercase tracking-widest px-3 mb-2">Career</p>
+
+    <a href="{% url 'career_chat' %}" class="sidebar-link" id="navChat">
+      <i data-lucide="bot" class="icon"></i>
+      <span class="sidebar-text">AI Career Coach</span>
+    </a>
+
+    <a href="{% url 'career_roadmap' %}" class="sidebar-link" id="navRoadmap">
+      <i data-lucide="map" class="icon"></i>
+      <span class="sidebar-text">Career Roadmap</span>
+    </a>
+
+    <a href="{% url 'resume_review' %}" class="sidebar-link" id="navResume">
+      <i data-lucide="file-text" class="icon"></i>
+      <span class="sidebar-text">Resume Review</span>
+    </a>
+
+    <a href="{% url 'interview_prep' %}" class="sidebar-link" id="navInterview">
+      <i data-lucide="mic" class="icon"></i>
+      <span class="sidebar-text">Interview Prep</span>
+    </a>
+
+    <!-- Community -->
+    <div class="section-divider"></div>
+    <p class="sidebar-text text-xs font-bold text-gray-400 uppercase tracking-widest px-3 mb-2">Community</p>
+
+    <a href="{% url 'mentors' %}" class="sidebar-link" id="navMentors">
+      <i data-lucide="users" class="icon"></i>
+      <span class="sidebar-text">Mentors</span>
+    </a>
+
+    <a href="{% url 'jobs' %}" class="sidebar-link" id="navJobs">
+      <i data-lucide="briefcase" class="icon"></i>
+      <span class="sidebar-text">Jobs</span>
+    </a>
+
+    <a href="{% url 'scholarships' %}" class="sidebar-link" id="navScholarships">
+      <i data-lucide="award" class="icon"></i>
+      <span class="sidebar-text">Scholarships</span>
+    </a>
+
+    <a href="{% url 'resources' %}" class="sidebar-link" id="navResources">
+      <i data-lucide="book-open" class="icon"></i>
+      <span class="sidebar-text">Resources</span>
+    </a>
+
+    <!-- Settings -->
+    <div class="section-divider"></div>
+    <a href="{% url 'settings' %}" class="sidebar-link" id="navSettings">
+      <i data-lucide="settings" class="icon"></i>
+      <span class="sidebar-text">Settings</span>
+    </a>
+
+    {% if request.user.is_staff %}
+    <a href="{% url 'admin_dashboard' %}" class="sidebar-link text-purple-600 dark:text-purple-400">
+      <i data-lucide="shield" class="icon"></i>
+      <span class="sidebar-text font-bold">Admin Panel</span>
+    </a>
+    {% endif %}
+
+  </nav>
+
+  <!-- Bottom: SOS Quick Launch -->
+  <div class="px-3 pb-4 sidebar-text">
+    <a href="{% url 'sos' %}"
+       class="flex items-center gap-2 p-3 rounded-2xl bg-gradient-to-r from-red-500 to-rose-500 text-white font-bold text-sm shadow-lg hover:opacity-90 transition">
+      <i data-lucide="alert-octagon" class="w-5 h-5"></i>
+      <span>Quick SOS</span>
+    </a>
+  </div>
+</aside>

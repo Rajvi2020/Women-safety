@@ -1,0 +1,184 @@
+{% extends 'layouts/dashboard_layout.html' %}
+{% load static %}
+{% block title %}Resources{% endblock %}
+{% block page_title %}Resources{% endblock %}
+{% block page_subtitle %}Legal, health & educational resources{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Category Tabs -->
+  <div class="flex gap-2 overflow-x-auto pb-1">
+    <button onclick="filterResources('all')" class="res-tab px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap bg-purple-600 text-white">All</button>
+    <button onclick="filterResources('legal')" class="res-tab px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap border-2 border-transparent text-gray-500 hover:border-purple-300">⚖️ Legal</button>
+    <button onclick="filterResources('health')" class="res-tab px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap border-2 border-transparent text-gray-500 hover:border-purple-300">💊 Health</button>
+    <button onclick="filterResources('video')" class="res-tab px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap border-2 border-transparent text-gray-500 hover:border-purple-300">📹 Videos</button>
+    <button onclick="filterResources('pdf')" class="res-tab px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap border-2 border-transparent text-gray-500 hover:border-purple-300">📄 PDFs</button>
+    <button onclick="filterResources('faq')" class="res-tab px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap border-2 border-transparent text-gray-500 hover:border-purple-300">❓ FAQ</button>
+  </div>
+
+  <!-- Resource Cards Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" id="resourceGrid">
+
+    <!-- Legal Resources -->
+    <div class="card p-5 resource-item" data-category="legal" data-aos>
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-2xl flex items-center justify-center text-2xl">⚖️</div>
+        <div>
+          <span class="badge badge-blue text-xs mb-1">Legal</span>
+          <h4 class="font-bold text-sm">POSH Act — Workplace Rights</h4>
+        </div>
+      </div>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">Complete guide to the Prevention of Sexual Harassment at Workplace Act, 2013. Know your rights and how to file complaints.</p>
+      <div class="flex gap-2">
+        <a href="#" class="btn-primary flex-1 text-sm py-2 text-center flex items-center justify-center gap-1.5">
+          <i data-lucide="external-link" class="w-4 h-4"></i> Read Guide
+        </a>
+        <button class="w-10 h-9 rounded-xl border-2 border-gray-200 dark:border-purple-900/40 flex items-center justify-center hover:border-purple-400 transition">
+          <i data-lucide="bookmark" class="w-4 h-4 text-gray-500"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="card p-5 resource-item" data-category="legal" data-aos>
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center text-2xl">📋</div>
+        <div>
+          <span class="badge badge-purple text-xs mb-1">Legal</span>
+          <h4 class="font-bold text-sm">Domestic Violence Act Guide</h4>
+        </div>
+      </div>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">Protection of Women from Domestic Violence Act, 2005 — Emergency remedies, protection orders, and helplines.</p>
+      <div class="flex gap-2">
+        <a href="#" class="btn-primary flex-1 text-sm py-2 text-center flex items-center justify-center gap-1.5"><i data-lucide="external-link" class="w-4 h-4"></i> Read Guide</a>
+        <button class="w-10 h-9 rounded-xl border-2 border-gray-200 dark:border-purple-900/40 flex items-center justify-center hover:border-purple-400 transition"><i data-lucide="bookmark" class="w-4 h-4 text-gray-500"></i></button>
+      </div>
+    </div>
+
+    <!-- Health Resources -->
+    <div class="card p-5 resource-item" data-category="health" data-aos>
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center text-2xl">💊</div>
+        <div>
+          <span class="badge badge-green text-xs mb-1">Health</span>
+          <h4 class="font-bold text-sm">Mental Health & Stress Management</h4>
+        </div>
+      </div>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">Evidence-based techniques for managing anxiety, PTSD, and burnout specifically for women in high-stress environments.</p>
+      <div class="flex gap-2">
+        <a href="#" class="btn-primary flex-1 text-sm py-2 text-center flex items-center justify-center gap-1.5"><i data-lucide="external-link" class="w-4 h-4"></i> Read Guide</a>
+        <button class="w-10 h-9 rounded-xl border-2 border-gray-200 dark:border-purple-900/40 flex items-center justify-center hover:border-purple-400 transition"><i data-lucide="bookmark" class="w-4 h-4 text-gray-500"></i></button>
+      </div>
+    </div>
+
+    <!-- PDF Resources -->
+    <div class="card p-5 resource-item" data-category="pdf" data-aos>
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center text-2xl">📄</div>
+        <div>
+          <span class="badge badge-red text-xs mb-1">PDF</span>
+          <h4 class="font-bold text-sm">Self-Defense Techniques</h4>
+        </div>
+      </div>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">Illustrated guide to basic self-defense moves, escape techniques, and situational awareness tips.</p>
+      <div class="flex gap-2">
+        <a href="#" download class="btn-primary flex-1 text-sm py-2 text-center flex items-center justify-center gap-1.5"><i data-lucide="download" class="w-4 h-4"></i> Download PDF</a>
+        <button class="w-10 h-9 rounded-xl border-2 border-gray-200 dark:border-purple-900/40 flex items-center justify-center hover:border-purple-400 transition"><i data-lucide="bookmark" class="w-4 h-4 text-gray-500"></i></button>
+      </div>
+    </div>
+
+    <!-- Video Resources -->
+    <div class="card p-5 resource-item" data-category="video" data-aos>
+      <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-purple-200 to-pink-200 h-36 mb-3 flex items-center justify-center cursor-pointer" onclick="playVideo('https://youtube.com/embed/example')">
+        <div class="w-14 h-14 bg-white/80 rounded-full flex items-center justify-center shadow-lg">
+          <i data-lucide="play" class="w-6 h-6 text-purple-600 ml-1"></i>
+        </div>
+        <span class="absolute top-2 right-2 badge badge-purple text-xs">Video</span>
+        <span class="absolute bottom-2 right-2 text-xs text-white font-bold bg-black/50 px-2 py-0.5 rounded">12:34</span>
+      </div>
+      <h4 class="font-bold text-sm mb-1">Awareness Walk — Safety in Public Spaces</h4>
+      <p class="text-xs text-gray-400 mb-3">Expert-led session on recognizing unsafe situations and de-escalation</p>
+      <button class="btn-outline w-full text-sm py-2">Watch Now</button>
+    </div>
+
+    <div class="card p-5 resource-item" data-category="video" data-aos>
+      <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-200 to-blue-200 h-36 mb-3 flex items-center justify-center cursor-pointer">
+        <div class="w-14 h-14 bg-white/80 rounded-full flex items-center justify-center shadow-lg">
+          <i data-lucide="play" class="w-6 h-6 text-indigo-600 ml-1"></i>
+        </div>
+        <span class="absolute top-2 right-2 badge badge-blue text-xs">Video</span>
+        <span class="absolute bottom-2 right-2 text-xs text-white font-bold bg-black/50 px-2 py-0.5 rounded">8:15</span>
+      </div>
+      <h4 class="font-bold text-sm mb-1">Women in Tech — Breaking Barriers</h4>
+      <p class="text-xs text-gray-400 mb-3">Inspiring stories from women leaders in Indian tech industry</p>
+      <button class="btn-outline w-full text-sm py-2">Watch Now</button>
+    </div>
+  </div>
+
+  <!-- FAQ Section -->
+  <div id="faqSection" class="card p-6">
+    <h3 class="font-display font-bold text-xl mb-5 flex items-center gap-2">
+      <i data-lucide="help-circle" class="w-5 h-5 text-purple-500"></i> Frequently Asked Questions
+    </h3>
+    <div class="space-y-3" id="faqList">
+      {% for faq in faqs %}
+      <div class="border border-gray-100 dark:border-purple-900/30 rounded-2xl overflow-hidden">
+        <button class="w-full flex items-center justify-between p-4 text-left font-semibold text-sm hover:bg-gray-50 dark:hover:bg-white/5 transition faq-toggle" onclick="toggleFaq(this)">
+          <span>{{ faq.question }}</span>
+          <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 transition-transform flex-shrink-0"></i>
+        </button>
+        <div class="faq-content hidden px-4 pb-4 text-sm text-gray-500 dark:text-gray-400">{{ faq.answer }}</div>
+      </div>
+      {% empty %}
+      <!-- Demo FAQs -->
+      {% for q, a in faq_demos %}
+      <div class="border border-gray-100 dark:border-purple-900/30 rounded-2xl overflow-hidden">
+        <button class="w-full flex items-center justify-between p-4 text-left font-semibold text-sm hover:bg-gray-50 dark:hover:bg-white/5 transition" onclick="toggleFaq(this)">
+          <span>What should I do during an SOS emergency?</span>
+          <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 transition-transform flex-shrink-0"></i>
+        </button>
+        <div class="faq-content hidden px-4 pb-4 text-sm text-gray-500 dark:text-gray-400">Hold the SOS button for 5 seconds. The app will automatically share your live location with all emergency contacts and notify the nearest police station. Ensure location permissions are enabled in your phone settings.</div>
+      </div>
+      {% endfor %}
+      <div class="border border-gray-100 dark:border-purple-900/30 rounded-2xl overflow-hidden">
+        <button class="w-full flex items-center justify-between p-4 text-left font-semibold text-sm hover:bg-gray-50 dark:hover:bg-white/5 transition" onclick="toggleFaq(this)">
+          <span>How does the AI Career Coach work?</span>
+          <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 transition-transform flex-shrink-0"></i>
+        </button>
+        <div class="faq-content hidden px-4 pb-4 text-sm text-gray-500 dark:text-gray-400">Our AI Career Coach uses GPT-4 to analyze your profile, skills, and goals to provide personalized career guidance, resume tips, interview preparation, and job recommendations tailored specifically for women professionals.</div>
+      </div>
+      <div class="border border-gray-100 dark:border-purple-900/30 rounded-2xl overflow-hidden">
+        <button class="w-full flex items-center justify-between p-4 text-left font-semibold text-sm hover:bg-gray-50 dark:hover:bg-white/5 transition" onclick="toggleFaq(this)">
+          <span>How do I book a mentor session?</span>
+          <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 transition-transform flex-shrink-0"></i>
+        </button>
+        <div class="faq-content hidden px-4 pb-4 text-sm text-gray-500 dark:text-gray-400">Go to the Mentors section, browse available mentors, click "Book Session", choose your preferred date, time, and session type (video/chat), and submit your booking request. The mentor will confirm within 24 hours.</div>
+      </div>
+      <div class="border border-gray-100 dark:border-purple-900/30 rounded-2xl overflow-hidden">
+        <button class="w-full flex items-center justify-between p-4 text-left font-semibold text-sm hover:bg-gray-50 dark:hover:bg-white/5 transition" onclick="toggleFaq(this)">
+          <span>Is my personal data secure on SheShield AI?</span>
+          <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 transition-transform flex-shrink-0"></i>
+        </button>
+        <div class="faq-content hidden px-4 pb-4 text-sm text-gray-500 dark:text-gray-400">Yes, we use industry-standard AES-256 encryption for all data storage and TLS 1.3 for data in transit. Location data is only shared when you explicitly trigger SOS. We never sell your personal data. Read our Privacy Policy for full details.</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<script>
+function filterResources(category) {
+  document.querySelectorAll('.resource-item').forEach(el => {
+    el.style.display = (category === 'all' || el.dataset.category === category) ? '' : 'none';
+  });
+  document.getElementById('faqSection').style.display = (category === 'all' || category === 'faq') ? '' : 'none';
+}
+function toggleFaq(btn) {
+  const content = btn.nextElementSibling;
+  const icon = btn.querySelector('[data-lucide="chevron-down"]');
+  content.classList.toggle('hidden');
+  icon?.classList.toggle('rotate-180');
+}
+</script>
+{% endblock %}

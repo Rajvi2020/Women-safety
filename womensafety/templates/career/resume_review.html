@@ -1,0 +1,123 @@
+{% extends 'layouts/dashboard_layout.html' %}
+{% load static %}
+{% block title %}Resume Review{% endblock %}
+{% block page_title %}AI Resume Review{% endblock %}
+{% block page_subtitle %}Get AI-powered feedback on your resume{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+  <!-- Upload & Score -->
+  <div class="lg:col-span-2 space-y-5">
+
+    <!-- Upload Card -->
+    <div class="card p-6">
+      <h3 class="font-display font-bold text-xl mb-4">Upload Resume</h3>
+      <form method="POST" action="{% url 'resume_review_submit' %}" enctype="multipart/form-data" id="reviewForm">
+        {% csrf_token %}
+        <div class="upload-zone mb-4" onclick="document.getElementById('reviewFileInput').click()" id="reviewDropZone">
+          <i data-lucide="upload-cloud" class="w-12 h-12 text-purple-400 mx-auto mb-3"></i>
+          <p class="font-semibold text-gray-700 dark:text-gray-300">Drop your resume here</p>
+          <p class="text-sm text-gray-400 mt-1">PDF or DOCX up to 10MB</p>
+          <p id="reviewFileName" class="mt-2 text-purple-600 font-medium text-sm hidden"></p>
+        </div>
+        <input id="reviewFileInput" name="resume_file" type="file" accept=".pdf,.docx,.doc" class="hidden"
+               onchange="handleFile(this)"/>
+        <button type="submit" id="analyzeBtn" class="btn-primary w-full py-3 flex items-center justify-center gap-2 disabled:opacity-50" disabled>
+          <i data-lucide="zap" class="w-5 h-5"></i> Analyze with AI
+        </button>
+      </form>
+    </div>
+
+    <!-- ATS Score -->
+    {% if review_result %}
+    <div class="card p-6 text-center">
+      <h3 class="font-semibold mb-4">ATS Score</h3>
+      <div class="relative w-32 h-32 mx-auto mb-4">
+        <svg class="w-32 h-32 -rotate-90" viewBox="0 0 128 128">
+          <circle cx="64" cy="64" r="54" fill="none" stroke="#E5E7EB" stroke-width="10"/>
+          <circle cx="64" cy="64" r="54" fill="none" stroke="url(#scoreGrad)" stroke-width="10" stroke-linecap="round"
+                  stroke-dasharray="{{ ats_score_dash|default:'237' }} 339"/>
+          <defs><linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#7C3AED"/><stop offset="100%" stop-color="#EC4899"/>
+          </linearGradient></defs>
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <p class="text-3xl font-bold gradient-text">{{ review_result.ats_score|default:'78' }}</p>
+          <p class="text-xs text-gray-400">/100</p>
+        </div>
+      </div>
+      <p class="text-sm font-semibold {% if review_result.ats_score >= 80 %}text-green-600{% elif review_result.ats_score >= 60 %}text-yellow-600{% else %}text-red-600{% endif %}">
+        {% if review_result.ats_score >= 80 %}Excellent{% elif review_result.ats_score >= 60 %}Good — Room for improvement{% else %}Needs Work{% endif %}
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Review Results -->
+  <div class="lg:col-span-3 space-y-5">
+    {% if review_result %}
+
+    <!-- Section Scores -->
+    <div class="card p-6">
+      <h3 class="font-display font-bold text-xl mb-4">Section Analysis</h3>
+      <div class="space-y-4">
+        {% for section in review_result.sections %}
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span class="font-medium">{{ section.name }}</span>
+            <span class="font-bold {% if section.score >= 80 %}text-green-600{% elif section.score >= 60 %}text-yellow-600{% else %}text-red-600{% endif %}">{{ section.score }}%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill {% if section.score >= 80 %}bg-green-500{% elif section.score >= 60 %}bg-yellow-500{% else %}bg-red-500{% endif %}" data-progress="{{ section.score }}" style="width:0%"></div></div>
+        </div>
+        {% empty %}
+        <div><div class="flex justify-between text-sm mb-1"><span class="font-medium">Work Experience</span><span class="font-bold text-green-600">85%</span></div><div class="progress-bar"><div class="progress-fill bg-green-500" data-progress="85" style="width:0%"></div></div></div>
+        <div><div class="flex justify-between text-sm mb-1"><span class="font-medium">Education</span><span class="font-bold text-green-600">90%</span></div><div class="progress-bar"><div class="progress-fill" data-progress="90" style="width:0%"></div></div></div>
+        <div><div class="flex justify-between text-sm mb-1"><span class="font-medium">Skills</span><span class="font-bold text-yellow-600">65%</span></div><div class="progress-bar"><div class="progress-fill bg-yellow-500" data-progress="65" style="width:0%"></div></div></div>
+        <div><div class="flex justify-between text-sm mb-1"><span class="font-medium">Summary / Objective</span><span class="font-bold text-red-600">45%</span></div><div class="progress-bar"><div class="progress-fill bg-red-500" data-progress="45" style="width:0%"></div></div></div>
+        <div><div class="flex justify-between text-sm mb-1"><span class="font-medium">Keywords Match</span><span class="font-bold text-yellow-600">70%</span></div><div class="progress-bar"><div class="progress-fill bg-yellow-500" data-progress="70" style="width:0%"></div></div></div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Suggestions -->
+    <div class="card p-6">
+      <h3 class="font-display font-bold text-xl mb-4">AI Suggestions</h3>
+      <div class="space-y-3">
+        {% for tip in review_result.suggestions %}
+        <div class="flex items-start gap-3 p-3 rounded-xl {% if tip.type == 'error' %}bg-red-50 dark:bg-red-900/15{% elif tip.type == 'warning' %}bg-yellow-50 dark:bg-yellow-900/15{% else %}bg-green-50 dark:bg-green-900/15{% endif %}">
+          <span class="text-lg">{% if tip.type == 'error' %}❌{% elif tip.type == 'warning' %}⚠️{% else %}✅{% endif %}</span>
+          <div><p class="font-semibold text-sm">{{ tip.title }}</p><p class="text-xs text-gray-500 mt-0.5">{{ tip.description }}</p></div>
+        </div>
+        {% empty %}
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-red-50 dark:bg-red-900/15"><span class="text-lg">❌</span><div><p class="font-semibold text-sm">Missing Professional Summary</p><p class="text-xs text-gray-500 mt-0.5">Add a 3-4 line summary at the top highlighting your key skills and career objective.</p></div></div>
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-yellow-50 dark:bg-yellow-900/15"><span class="text-lg">⚠️</span><div><p class="font-semibold text-sm">Quantify Your Achievements</p><p class="text-xs text-gray-500 mt-0.5">Replace "improved performance" with "improved performance by 40% using XYZ method".</p></div></div>
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-green-50 dark:bg-green-900/15"><span class="text-lg">✅</span><div><p class="font-semibold text-sm">Education Section is Well-Formatted</p><p class="text-xs text-gray-500 mt-0.5">Your education section follows best practices with institution, degree, and year clearly listed.</p></div></div>
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-yellow-50 dark:bg-yellow-900/15"><span class="text-lg">⚠️</span><div><p class="font-semibold text-sm">Add More Relevant Keywords</p><p class="text-xs text-gray-500 mt-0.5">Missing keywords: "data pipeline", "model deployment", "A/B testing". These appear in 80% of similar job descriptions.</p></div></div>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <!-- Empty state -->
+    <div class="card p-12 text-center">
+      <div class="w-24 h-24 bg-purple-100 dark:bg-purple-900/30 rounded-3xl flex items-center justify-center mx-auto mb-4"><i data-lucide="file-text" class="w-12 h-12 text-purple-400"></i></div>
+      <h3 class="font-display font-bold text-xl mb-2">Ready to Review</h3>
+      <p class="text-gray-500 text-sm max-w-sm mx-auto">Upload your resume and our AI will analyze it for ATS compatibility, section strength, keyword matching, and more.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+function handleFile(input) {
+  const file = input.files[0];
+  if(!file) return;
+  const nameEl = document.getElementById('reviewFileName');
+  nameEl.textContent = `📄 ${file.name}`;
+  nameEl.classList.remove('hidden');
+  document.getElementById('analyzeBtn').disabled = false;
+  document.getElementById('reviewDropZone').classList.add('border-purple-500','bg-purple-50','dark:bg-purple-900/10');
+}
+</script>
+{% endblock %}

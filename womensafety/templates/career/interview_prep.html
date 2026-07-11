@@ -1,0 +1,149 @@
+{% extends 'layouts/dashboard_layout.html' %}
+{% load static %}
+{% block title %}Interview Preparation{% endblock %}
+{% block page_title %}Interview Preparation{% endblock %}
+{% block page_subtitle %}Practice with AI-powered mock interviews{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Mode Selection -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="card p-5 cursor-pointer hover:border-purple-400 transition border-2 border-transparent" onclick="selectMode(this, 'mock')">
+      <div class="w-12 h-12 gradient-bg rounded-2xl flex items-center justify-center text-2xl mb-3">🎤</div>
+      <h4 class="font-bold mb-1">Mock Interview</h4>
+      <p class="text-sm text-gray-500">AI conducts a full interview session with feedback</p>
+    </div>
+    <div class="card p-5 cursor-pointer hover:border-pink-400 transition border-2 border-transparent" onclick="selectMode(this, 'practice')">
+      <div class="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-2xl flex items-center justify-center text-2xl mb-3">📝</div>
+      <h4 class="font-bold mb-1">Question Practice</h4>
+      <p class="text-sm text-gray-500">Practice common questions by category</p>
+    </div>
+    <div class="card p-5 cursor-pointer hover:border-indigo-400 transition border-2 border-transparent" onclick="selectMode(this, 'tips')">
+      <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-2xl flex items-center justify-center text-2xl mb-3">💡</div>
+      <h4 class="font-bold mb-1">Tips & Strategies</h4>
+      <p class="text-sm text-gray-500">Proven interview techniques and body language tips</p>
+    </div>
+  </div>
+
+  <!-- Question Practice Panel -->
+  <div id="practicePanel">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+      <!-- Question Categories -->
+      <div class="card p-5">
+        <h3 class="font-semibold mb-3">Categories</h3>
+        <div class="space-y-1">
+          {% for cat in question_categories %}
+          <button onclick="loadQuestions('{{ cat.slug }}')" class="q-cat w-full text-left p-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 transition">
+            {{ cat.icon }} {{ cat.name }} <span class="float-right text-gray-400 text-xs">{{ cat.count }}</span>
+          </button>
+          {% empty %}
+          <button onclick="loadQuestion(this)" class="q-cat w-full text-left p-2.5 rounded-xl text-sm font-medium hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 transition bg-purple-50 dark:bg-purple-900/20 text-purple-700">🧠 Behavioral <span class="float-right text-gray-400 text-xs">24</span></button>
+          <button onclick="loadQuestion(this)" class="q-cat w-full text-left p-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 transition">💻 Technical <span class="float-right text-gray-400 text-xs">48</span></button>
+          <button onclick="loadQuestion(this)" class="q-cat w-full text-left p-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 transition">🎯 Situational <span class="float-right text-gray-400 text-xs">18</span></button>
+          <button onclick="loadQuestion(this)" class="q-cat w-full text-left p-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 transition">🚀 Leadership <span class="float-right text-gray-400 text-xs">15</span></button>
+          <button onclick="loadQuestion(this)" class="q-cat w-full text-left p-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 transition">❓ HR / General <span class="float-right text-gray-400 text-xs">20</span></button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Question & Answer -->
+      <div class="lg:col-span-2 space-y-4">
+        <!-- Current Question -->
+        <div class="card p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/10">
+          <div class="flex items-center justify-between mb-3">
+            <span class="badge badge-purple text-xs">Question 1 of 24</span>
+            <div class="flex gap-2">
+              <button class="w-8 h-8 rounded-xl bg-white dark:bg-white/10 flex items-center justify-center text-gray-500 hover:text-yellow-500 transition" title="Bookmark">
+                <i data-lucide="bookmark" class="w-4 h-4"></i>
+              </button>
+              <button onclick="nextQuestion()" class="w-8 h-8 rounded-xl bg-white dark:bg-white/10 flex items-center justify-center text-gray-500 hover:text-purple-600 transition" title="Next">
+                <i data-lucide="skip-forward" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <h3 class="font-display font-bold text-xl" id="questionText">
+            {{ current_question|default:'Tell me about yourself and your journey into technology.' }}
+          </h3>
+          <p class="text-sm text-gray-500 mt-2">💡 Hint: Use the STAR method — Situation, Task, Action, Result</p>
+        </div>
+
+        <!-- Answer Area -->
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="font-semibold">Your Answer</h4>
+            <div class="flex gap-2">
+              <button id="recordBtn" onclick="toggleRecord()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-500 text-xs font-semibold hover:bg-red-100 transition">
+                <i data-lucide="mic" class="w-3.5 h-3.5"></i> Record
+              </button>
+            </div>
+          </div>
+          <textarea id="answerText" rows="5" class="form-input resize-none text-sm" placeholder="Type your answer here, or click Record to speak…"></textarea>
+          <div class="flex gap-3 mt-3">
+            <button onclick="getAIFeedback()" class="btn-primary flex-1 text-sm py-2.5 flex items-center justify-center gap-1.5">
+              <i data-lucide="zap" class="w-4 h-4"></i> Get AI Feedback
+            </button>
+            <button onclick="showSampleAnswer()" class="btn-outline flex-1 text-sm py-2.5">View Sample Answer</button>
+          </div>
+        </div>
+
+        <!-- AI Feedback (shown after submit) -->
+        <div id="aiFeedback" class="hidden card p-5 border-purple-200 dark:border-purple-600/40">
+          <h4 class="font-semibold mb-3 flex items-center gap-2"><span>🤖</span> AI Feedback</h4>
+          <div class="space-y-3">
+            <div class="grid grid-cols-3 gap-3 text-center">
+              <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl"><p class="text-xl font-bold text-green-600">8/10</p><p class="text-xs text-gray-500">Overall</p></div>
+              <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl"><p class="text-xl font-bold text-purple-600">7/10</p><p class="text-xs text-gray-500">Clarity</p></div>
+              <div class="p-3 bg-pink-50 dark:bg-pink-900/20 rounded-xl"><p class="text-xl font-bold text-pink-600">9/10</p><p class="text-xs text-gray-500">Relevance</p></div>
+            </div>
+            <div class="bg-gray-50 dark:bg-white/5 rounded-xl p-4 text-sm text-gray-600 dark:text-gray-400" id="feedbackText">
+              Your answer shows good structure. Consider adding specific metrics to quantify your achievements. The STAR method was applied well, but the "Result" section could be more impactful with data points.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let recording = false;
+function toggleRecord() {
+  recording = !recording;
+  const btn = document.getElementById('recordBtn');
+  btn.innerHTML = recording ?
+    '<svg class="w-3.5 h-3.5 animate-pulse" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg> Stop Recording' :
+    '<i data-lucide="mic" class="w-3.5 h-3.5"></i> Record';
+  btn.classList.toggle('text-red-600', recording);
+  if(window.lucide) lucide.createIcons();
+  if(!recording) Toast?.success('Recording saved!');
+}
+function selectMode(el, mode) {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('border-purple-500','border-pink-500','border-indigo-500'));
+  el.classList.add('border-' + (mode === 'mock' ? 'purple' : mode === 'practice' ? 'pink' : 'indigo') + '-500');
+}
+function nextQuestion() {
+  const questions = [
+    "Tell me about yourself and your journey into technology.",
+    "Describe a challenge you faced at work and how you overcame it.",
+    "Where do you see yourself in 5 years?",
+    "What are your greatest strengths and weaknesses?",
+    "Why do you want to join our company?"
+  ];
+  const el = document.getElementById('questionText');
+  el.textContent = questions[Math.floor(Math.random() * questions.length)];
+  document.getElementById('answerText').value = '';
+  document.getElementById('aiFeedback')?.classList.add('hidden');
+}
+function getAIFeedback() {
+  const fb = document.getElementById('aiFeedback');
+  fb?.classList.remove('hidden');
+  fb?.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+function showSampleAnswer() {
+  document.getElementById('answerText').value = "I started my journey in technology with a strong passion for solving real-world problems. During my B.Tech, I led a team of 5 to build a machine learning model that improved our college's attendance tracking system by 60%. After graduating, I joined [Company] as a Data Analyst, where I designed ETL pipelines processing 2M+ records daily. My goal is to leverage AI to create solutions that make a meaningful impact.";
+}
+</script>
+{% endblock %}

@@ -1,0 +1,211 @@
+{% extends 'layouts/dashboard_layout.html' %}
+{% load static %}
+{% block title %}Live Location{% endblock %}
+{% block page_title %}Live Location{% endblock %}
+{% block page_subtitle %}Share your real-time location with trusted contacts{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Status Bar -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="card p-4 flex items-center gap-3">
+      <div class="w-11 h-11 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+        <i data-lucide="shield-check" class="w-5 h-5 text-green-600"></i>
+      </div>
+      <div>
+        <p class="text-xs text-gray-400">Status</p>
+        <p class="font-bold text-green-600" id="trackingStatus">Tracking Active</p>
+      </div>
+      <label class="toggle ml-auto">
+        <input type="checkbox" id="trackingToggle" checked onchange="toggleTracking(this)"/>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="card p-4 flex items-center gap-3">
+      <div class="w-11 h-11 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+        <i data-lucide="map-pin" class="w-5 h-5 text-purple-600"></i>
+      </div>
+      <div>
+        <p class="text-xs text-gray-400">Coordinates</p>
+        <p class="font-bold text-sm" id="coordsDisplay">Fetching...</p>
+      </div>
+    </div>
+    <div class="card p-4 flex items-center gap-3">
+      <div class="w-11 h-11 bg-pink-100 dark:bg-pink-900/30 rounded-xl flex items-center justify-center">
+        <i data-lucide="users" class="w-5 h-5 text-pink-600"></i>
+      </div>
+      <div>
+        <p class="text-xs text-gray-400">Shared With</p>
+        <p class="font-bold">{{ shared_with_count|default:'3' }} contacts</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Map -->
+    <div class="lg:col-span-2 card overflow-hidden">
+      <div class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-white/10">
+        <h3 class="font-semibold flex items-center gap-2">
+          <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Live Map
+        </h3>
+        <div class="flex gap-2">
+          <button onclick="shareLocation()" class="btn-primary text-xs py-1.5 px-3 flex items-center gap-1">
+            <i data-lucide="share-2" class="w-3.5 h-3.5"></i> Share Link
+          </button>
+          <a href="{% url 'safe_route' %}" class="btn-outline text-xs py-1.5 px-3">Safe Route</a>
+        </div>
+      </div>
+      <!-- Live Map Visual -->
+      <div class="relative bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100 dark:from-blue-900/20 dark:via-purple-900/20 dark:to-indigo-900/20" style="height:420px;">
+        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 500 420" preserveAspectRatio="xMidYMid meet">
+          <!-- Grid lines -->
+          <defs>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#E5E7EB" stroke-width="0.5" opacity="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="500" height="420" fill="url(#grid)"/>
+          <!-- Roads -->
+          <line x1="0" y1="210" x2="500" y2="210" stroke="#D1D5DB" stroke-width="12" opacity="0.4"/>
+          <line x1="250" y1="0" x2="250" y2="420" stroke="#D1D5DB" stroke-width="12" opacity="0.4"/>
+          <line x1="0" y1="120" x2="500" y2="300" stroke="#D1D5DB" stroke-width="6" opacity="0.3"/>
+          <!-- Buildings -->
+          <rect x="50" y="60" width="70" height="50" fill="#A78BFA" opacity="0.2" rx="4"/>
+          <rect x="160" y="240" width="80" height="60" fill="#EC4899" opacity="0.15" rx="4"/>
+          <rect x="300" y="80" width="60" height="80" fill="#6366F1" opacity="0.2" rx="4"/>
+          <rect x="370" y="260" width="90" height="50" fill="#A78BFA" opacity="0.15" rx="4"/>
+          <!-- Safe zones -->
+          <circle cx="250" cy="210" r="60" fill="#10B981" opacity="0.08" stroke="#10B981" stroke-width="1.5" stroke-dasharray="6 3"/>
+          <!-- User location pin with pulse -->
+          <circle cx="250" cy="210" r="30" fill="#7C3AED" opacity="0.15">
+            <animate attributeName="r" values="20;35;20" dur="2s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.2;0.05;0.2" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="250" cy="210" r="12" fill="#7C3AED"/>
+          <circle cx="250" cy="210" r="5" fill="white"/>
+          <!-- Location label -->
+          <rect x="195" y="175" width="110" height="26" fill="white" rx="6" opacity="0.9"/>
+          <text x="250" y="192" text-anchor="middle" font-size="10" font-weight="600" fill="#7C3AED">📍 Your Location</text>
+          <!-- Nearby contacts -->
+          <circle cx="150" cy="140" r="8" fill="#EC4899"/>
+          <text x="150" y="128" text-anchor="middle" font-size="8" fill="#BE185D">Meera</text>
+          <circle cx="380" cy="280" r="8" fill="#6366F1"/>
+          <text x="380" y="268" text-anchor="middle" font-size="8" fill="#4338CA">Riya</text>
+        </svg>
+        <!-- Map controls -->
+        <div class="absolute top-3 right-3 flex flex-col gap-2">
+          <button class="w-9 h-9 bg-white dark:bg-gray-800 rounded-xl shadow-lg flex items-center justify-center text-gray-700 dark:text-gray-300 font-bold text-lg hover:bg-purple-50 transition">+</button>
+          <button class="w-9 h-9 bg-white dark:bg-gray-800 rounded-xl shadow-lg flex items-center justify-center text-gray-700 dark:text-gray-300 font-bold text-lg hover:bg-purple-50 transition">−</button>
+          <button onclick="centerMap()" class="w-9 h-9 bg-white dark:bg-gray-800 rounded-xl shadow-lg flex items-center justify-center text-purple-600 hover:bg-purple-50 transition">
+            <i data-lucide="crosshair" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <!-- Last updated -->
+        <div class="absolute bottom-3 left-3 bg-white/90 dark:bg-gray-900/90 text-xs px-3 py-1.5 rounded-xl text-gray-500 backdrop-blur-sm">
+          Last updated: <span id="lastUpdated">Just now</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sharing Panel -->
+    <div class="space-y-4">
+
+      <!-- Share with Contacts -->
+      <div class="card p-5">
+        <h3 class="font-semibold mb-4">Sharing With</h3>
+        <div class="space-y-3" id="sharingList">
+          {% for contact in shared_contacts %}
+          <div class="flex items-center gap-3 p-2 rounded-xl">
+            <img src="https://ui-avatars.com/api/?name={{ contact.name }}&background=7C3AED&color=fff&size=36" class="avatar w-9 h-9"/>
+            <div class="flex-1">
+              <p class="font-medium text-sm">{{ contact.name }}</p>
+              <p class="text-xs text-gray-400">{{ contact.relation }}</p>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" checked onchange="toggleShare('{{ contact.id }}', this)"/>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          {% empty %}
+          <div class="flex items-center gap-3 p-2 rounded-xl">
+            <img src="https://ui-avatars.com/api/?name=Meera+S&background=7C3AED&color=fff&size=36" class="avatar w-9 h-9"/>
+            <div class="flex-1"><p class="font-medium text-sm">Meera Sharma</p><p class="text-xs text-gray-400">Mother</p></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl">
+            <img src="https://ui-avatars.com/api/?name=Rajiv+K&background=EC4899&color=fff&size=36" class="avatar w-9 h-9"/>
+            <div class="flex-1"><p class="font-medium text-sm">Rajiv Kumar</p><p class="text-xs text-gray-400">Father</p></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl">
+            <img src="https://ui-avatars.com/api/?name=Priya+R&background=6366F1&color=fff&size=36" class="avatar w-9 h-9"/>
+            <div class="flex-1"><p class="font-medium text-sm">Priya Rao</p><p class="text-xs text-gray-400">Best Friend</p></div>
+            <label class="toggle"><input type="checkbox"/><span class="toggle-slider"></span></label>
+          </div>
+          {% endfor %}
+        </div>
+        <button class="btn-outline w-full mt-3 text-sm py-2" onclick="Toast.success('Location link copied!')">
+          <i data-lucide="link" class="w-4 h-4 inline mr-1"></i> Copy Share Link
+        </button>
+      </div>
+
+      <!-- Location History -->
+      <div class="card p-5">
+        <h3 class="font-semibold mb-3 flex items-center justify-between">
+          Location History
+          <button class="text-xs text-red-500 hover:underline">Clear All</button>
+        </h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-purple-500 flex-shrink-0"></i>
+            <div class="flex-1 truncate">Koregaon Park, Pune</div>
+            <span class="text-xs text-gray-400 flex-shrink-0">Now</span>
+          </div>
+          <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-gray-400 flex-shrink-0"></i>
+            <div class="flex-1 truncate">FC Road, Pune</div>
+            <span class="text-xs text-gray-400 flex-shrink-0">1h ago</span>
+          </div>
+          <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-gray-400 flex-shrink-0"></i>
+            <div class="flex-1 truncate">Shivajinagar, Pune</div>
+            <span class="text-xs text-gray-400 flex-shrink-0">3h ago</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleTracking(inp) {
+  const status = document.getElementById('trackingStatus');
+  status.textContent = inp.checked ? 'Tracking Active' : 'Tracking Paused';
+  status.className = inp.checked ? 'font-bold text-green-600' : 'font-bold text-gray-400';
+  Toast.info(inp.checked ? '📍 Location tracking resumed' : '⏸️ Location tracking paused');
+}
+function shareLocation() {
+  if(navigator.clipboard) {
+    navigator.clipboard.writeText(window.location.origin + '/location/live/?token=abc123');
+    Toast.success('🔗 Share link copied to clipboard!');
+  }
+}
+function centerMap() { Toast.info('Map centered to your location'); }
+// Geolocation
+if(navigator.geolocation) {
+  navigator.geolocation.watchPosition(pos => {
+    const lat = pos.coords.latitude.toFixed(5);
+    const lng = pos.coords.longitude.toFixed(5);
+    document.getElementById('coordsDisplay').textContent = `${lat}°N, ${lng}°E`;
+    document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+  }, () => {
+    document.getElementById('coordsDisplay').textContent = '18.5204°N, 73.8567°E';
+  });
+} else {
+  document.getElementById('coordsDisplay').textContent = 'Not available';
+}
+</script>
+{% endblock %}

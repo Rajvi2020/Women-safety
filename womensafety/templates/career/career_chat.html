@@ -1,0 +1,182 @@
+{% extends 'layouts/dashboard_layout.html' %}
+{% load static %}
+{% block title %}AI Career Coach{% endblock %}
+{% block page_title %}AI Career Coach{% endblock %}
+{% block page_subtitle %}Your personal career advisor{% endblock %}
+
+{% block content %}
+<div class="flex flex-col lg:flex-row gap-6 h-[calc(100vh-10rem)]">
+
+  <!-- ── SIDEBAR: Chat History ── -->
+  <div class="hidden lg:flex flex-col w-72 card p-4 flex-shrink-0 overflow-hidden">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-semibold text-sm">Chat History</h3>
+      <button id="newChatBtn" class="text-xs btn-primary py-1.5 px-3">+ New</button>
+    </div>
+    <div class="space-y-1 overflow-y-auto flex-1">
+      {% for conv in conversations %}
+      <button class="w-full text-left p-3 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/20 transition text-sm truncate {% if conv.id == active_conv %}bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 font-semibold{% else %}text-gray-600 dark:text-gray-400{% endif %}">
+        {{ conv.title }}
+      </button>
+      {% empty %}
+      <button class="w-full text-left p-3 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-700 font-semibold text-sm">Resume Review Tips</button>
+      <button class="w-full text-left p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 text-sm text-gray-600 dark:text-gray-400 truncate">Python Career Roadmap</button>
+      <button class="w-full text-left p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 text-sm text-gray-600 dark:text-gray-400 truncate">Interview Preparation</button>
+      <button class="w-full text-left p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 text-sm text-gray-600 dark:text-gray-400 truncate">Scholarship Guidance</button>
+      {% endfor %}
+    </div>
+    <!-- Quick Prompts -->
+    <div class="mt-4 pt-4 border-t border-gray-100 dark:border-white/10">
+      <p class="text-xs font-bold text-gray-400 uppercase mb-2">Quick Prompts</p>
+      <div class="space-y-1">
+        <button onclick="setPrompt(this)" class="w-full text-left p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 text-xs text-gray-600 dark:text-gray-400 transition">📄 Review my resume</button>
+        <button onclick="setPrompt(this)" class="w-full text-left p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 text-xs text-gray-600 dark:text-gray-400 transition">🎯 Suggest jobs for me</button>
+        <button onclick="setPrompt(this)" class="w-full text-left p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 text-xs text-gray-600 dark:text-gray-400 transition">🗺️ Build career roadmap</button>
+        <button onclick="setPrompt(this)" class="w-full text-left p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 text-xs text-gray-600 dark:text-gray-400 transition">💼 Interview prep tips</button>
+        <button onclick="setPrompt(this)" class="w-full text-left p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 text-xs text-gray-600 dark:text-gray-400 transition">🎓 Find scholarships</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN CHAT AREA ── -->
+  <div class="flex-1 card flex flex-col overflow-hidden">
+    <!-- Chat Header -->
+    <div class="flex items-center gap-3 p-4 border-b border-gray-100 dark:border-white/10">
+      <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center flex-shrink-0">
+        <span class="text-xl">🤖</span>
+      </div>
+      <div>
+        <p class="font-bold text-sm">SheShield Career AI</p>
+        <div class="flex items-center gap-1.5">
+          <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <p class="text-xs text-gray-400">Online · Powered by GPT-4</p>
+        </div>
+      </div>
+      <div class="ml-auto flex gap-2">
+        <button class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-500 hover:bg-purple-50 transition">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </button>
+        <button class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-500 hover:bg-purple-50 transition">
+          <i data-lucide="download" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chatMessages">
+      <!-- Welcome AI message -->
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 gradient-bg rounded-xl flex items-center justify-center flex-shrink-0 text-sm">🤖</div>
+        <div>
+          <div class="chat-bubble-ai">
+            <p class="font-semibold mb-1">Hello! I'm your SheShield Career AI 👋</p>
+            <p class="text-sm">I'm here to help you with career guidance, resume review, interview preparation, job search, and more. How can I assist you today?</p>
+          </div>
+          <div class="mt-2 flex flex-wrap gap-2">
+            <button onclick="setPrompt(this)" class="text-xs px-3 py-1.5 rounded-full border border-purple-200 dark:border-purple-700 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition">📄 Review my resume</button>
+            <button onclick="setPrompt(this)" class="text-xs px-3 py-1.5 rounded-full border border-purple-200 dark:border-purple-700 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition">🗺️ Career roadmap</button>
+            <button onclick="setPrompt(this)" class="text-xs px-3 py-1.5 rounded-full border border-purple-200 dark:border-purple-700 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition">💼 Interview tips</button>
+          </div>
+          <p class="text-xs text-gray-400 mt-1">Just now</p>
+        </div>
+      </div>
+
+      {% for msg in messages %}
+      {% if msg.role == 'user' %}
+      <div class="flex items-end justify-end gap-3">
+        <div>
+          <div class="chat-bubble-user"><p class="text-sm">{{ msg.content }}</p></div>
+          <p class="text-xs text-gray-400 mt-1 text-right">{{ msg.timestamp|time:"H:i" }}</p>
+        </div>
+        <img src="{% if request.user.profile_photo %}{{ request.user.profile_photo.url }}{% else %}https://ui-avatars.com/api/?name={{ request.user.first_name|urlencode }}&background=EC4899&color=fff&size=32{% endif %}" class="avatar w-8 h-8 flex-shrink-0"/>
+      </div>
+      {% else %}
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 gradient-bg rounded-xl flex items-center justify-center flex-shrink-0 text-sm">🤖</div>
+        <div>
+          <div class="chat-bubble-ai"><p class="text-sm">{{ msg.content }}</p></div>
+          <p class="text-xs text-gray-400 mt-1">{{ msg.timestamp|time:"H:i" }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Typing indicator (hidden by default) -->
+    <div id="typingIndicator" class="hidden flex items-start gap-3 px-4 pb-2">
+      <div class="w-8 h-8 gradient-bg rounded-xl flex items-center justify-center flex-shrink-0 text-sm">🤖</div>
+      <div class="chat-bubble-ai flex items-center gap-1 py-3">
+        <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce"></div>
+        <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style="animation-delay:0.15s"></div>
+        <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style="animation-delay:0.3s"></div>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="p-4 border-t border-gray-100 dark:border-white/10">
+      <form id="chatForm" method="POST" action="{% url 'career_chat_send' %}" class="flex items-end gap-3">
+        {% csrf_token %}
+        <div class="flex-1 relative">
+          <textarea id="chatInput" name="message" rows="1" placeholder="Ask me anything about your career…"
+                    class="form-input pr-12 resize-none min-h-[44px] max-h-32 overflow-y-auto text-sm"></textarea>
+          <button type="button" class="absolute right-2 bottom-2 w-8 h-8 rounded-lg bg-gray-100 dark:bg-white/10 flex items-center justify-center text-gray-500 hover:bg-purple-100 transition">
+            <i data-lucide="paperclip" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <button type="submit" id="sendBtn"
+                class="w-11 h-11 rounded-xl gradient-bg flex items-center justify-center text-white shadow-lg hover:opacity-90 transition flex-shrink-0">
+          <i data-lucide="send" class="w-5 h-5"></i>
+        </button>
+      </form>
+      <p class="text-xs text-gray-400 mt-2 text-center">AI responses may not always be accurate. Verify important information.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// Auto-resize textarea
+const chatInput = document.getElementById('chatInput');
+chatInput?.addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 128) + 'px';
+});
+// Send on Enter (Shift+Enter for newline)
+chatInput?.addEventListener('keydown', e => {
+  if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('chatForm')?.requestSubmit(); }
+});
+// Set prompt from quick buttons
+function setPrompt(btn) { if(chatInput) { chatInput.value = btn.textContent.replace(/^[^\w]+/,'').trim(); chatInput.focus(); } }
+// Scroll to bottom
+function scrollChat() {
+  const el = document.getElementById('chatMessages');
+  if(el) el.scrollTop = el.scrollHeight;
+}
+scrollChat();
+
+// AJAX chat
+document.getElementById('chatForm')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const msg = chatInput.value.trim();
+  if(!msg) return;
+  // Add user bubble
+  const msgs = document.getElementById('chatMessages');
+  msgs.innerHTML += `<div class="flex items-end justify-end gap-3"><div><div class="chat-bubble-user"><p class="text-sm">${msg}</p></div><p class="text-xs text-gray-400 mt-1 text-right">Now</p></div><div class="w-8 h-8 gradient-bg rounded-xl flex items-center justify-center text-white text-xs flex-shrink-0">Me</div></div>`;
+  chatInput.value = '';
+  chatInput.style.height = 'auto';
+  // Show typing
+  document.getElementById('typingIndicator')?.classList.remove('hidden');
+  scrollChat();
+  // Send to backend
+  fetch('{% url "career_chat_send" %}', {
+    method:'POST',
+    headers:{'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1]||'', 'Content-Type':'application/json'},
+    body: JSON.stringify({message: msg})
+  }).then(r=>r.json()).then(data => {
+    document.getElementById('typingIndicator')?.classList.add('hidden');
+    if(data.reply) {
+      msgs.innerHTML += `<div class="flex items-start gap-3"><div class="w-8 h-8 gradient-bg rounded-xl flex items-center justify-center flex-shrink-0 text-sm">🤖</div><div><div class="chat-bubble-ai"><p class="text-sm">${data.reply}</p></div><p class="text-xs text-gray-400 mt-1">Just now</p></div></div>`;
+    }
+    scrollChat();
+  }).catch(() => { document.getElementById('typingIndicator')?.classList.add('hidden'); });
+});
+</script>
+{% endblock %}

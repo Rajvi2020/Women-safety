@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" class="">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Admin{% endblock %} — SheShield Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode:'class',
+      theme:{extend:{
+        colors:{primary:{DEFAULT:'#7C3AED',light:'#A78BFA'},secondary:{DEFAULT:'#EC4899',light:'#F9A8D4'}},
+        fontFamily:{sans:['Inter','sans-serif'],display:['Poppins','sans-serif']}
+      }}
+    };
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{% static 'css/custom.css' %}"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="bg-gray-50 dark:bg-[#0A0612] min-h-screen">
+
+  <!-- Admin Sidebar -->
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+  <aside id="sidebar" class="sidebar flex flex-col" style="background:linear-gradient(180deg,#3B0764,#1E1B4B);">
+    <!-- Logo -->
+    <div class="flex items-center gap-3 px-5 py-5 border-b border-white/10">
+      <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center"><span class="text-white font-bold text-lg">S</span></div>
+      <div><p class="font-display font-bold text-white">SheShield</p><p class="text-xs text-purple-300">Admin Panel</p></div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <a href="{% url 'admin_dashboard' %}" class="sidebar-link text-purple-200 hover:text-white hover:bg-white/10" id="adminNav1">
+        <i data-lucide="layout-dashboard" class="icon"></i><span>Dashboard</span>
+      </a>
+      <a href="{% url 'admin_users' %}" class="sidebar-link text-purple-200 hover:text-white hover:bg-white/10">
+        <i data-lucide="users" class="icon"></i><span>User Management</span>
+      </a>
+      <a href="{% url 'admin_mentors' %}" class="sidebar-link text-purple-200 hover:text-white hover:bg-white/10">
+        <i data-lucide="user-check" class="icon"></i><span>Mentor Approval</span>
+      </a>
+      <a href="{% url 'admin_jobs' %}" class="sidebar-link text-purple-200 hover:text-white hover:bg-white/10">
+        <i data-lucide="briefcase" class="icon"></i><span>Job Management</span>
+      </a>
+      <a href="{% url 'admin_scholarships' %}" class="sidebar-link text-purple-200 hover:text-white hover:bg-white/10">
+        <i data-lucide="award" class="icon"></i><span>Scholarships</span>
+      </a>
+      <a href="{% url 'admin_resources' %}" class="sidebar-link text-purple-200 hover:text-white hover:bg-white/10">
+        <i data-lucide="book-open" class="icon"></i><span>Resources</span>
+      </a>
+      <div class="section-divider" style="background:rgba(255,255,255,0.1)"></div>
+      <a href="{% url 'admin_sos' %}" class="sidebar-link text-red-300 hover:text-white hover:bg-red-900/30">
+        <i data-lucide="alert-octagon" class="icon"></i><span>SOS Monitoring</span>
+      </a>
+      <a href="{% url 'admin_reports' %}" class="sidebar-link text-purple-200 hover:text-white hover:bg-white/10">
+        <i data-lucide="bar-chart-2" class="icon"></i><span>Reports</span>
+      </a>
+      <div class="section-divider" style="background:rgba(255,255,255,0.1)"></div>
+      <a href="{% url 'dashboard' %}" class="sidebar-link text-purple-200 hover:text-white hover:bg-white/10">
+        <i data-lucide="arrow-left" class="icon"></i><span>Back to App</span>
+      </a>
+    </nav>
+
+    <div class="px-4 pb-4">
+      <div class="flex items-center gap-3 p-3 bg-white/10 rounded-2xl">
+        <img src="https://ui-avatars.com/api/?name=Admin&background=EC4899&color=fff&size=36" class="avatar w-9 h-9"/>
+        <div><p class="text-white font-semibold text-sm">Admin</p><p class="text-purple-300 text-xs">Super Admin</p></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-content lg:ml-[260px] flex flex-col min-h-screen">
+    <!-- Admin Navbar -->
+    <nav class="navbar flex items-center justify-between px-4 lg:px-6">
+      <div class="flex items-center gap-3">
+        <button id="sidebarToggle" class="w-9 h-9 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center lg:hidden">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+        <h1 class="font-display font-bold text-lg">{% block page_title %}Admin Dashboard{% endblock %}</h1>
+      </div>
+      <div class="flex items-center gap-2">
+        <button data-dark-toggle-btn class="w-9 h-9 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center"><span data-dark-icon>🌙</span></button>
+        <span class="badge badge-purple">Admin</span>
+      </div>
+    </nav>
+
+    <main class="flex-1 p-4 lg:p-6 xl:p-8">{% block content %}{% endblock %}</main>
+
+    <footer class="py-4 px-6 border-t border-gray-200 dark:border-purple-900/30 text-center text-xs text-gray-400">
+      © 2025 SheShield AI Admin Panel
+    </footer>
+  </div>
+
+  <script>if(window.lucide)lucide.createIcons();</script>
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

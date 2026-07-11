@@ -1,0 +1,195 @@
+{% extends 'layouts/dashboard_layout.html' %}
+{% load static %}
+{% block title %}Settings{% endblock %}
+{% block page_title %}Settings{% endblock %}
+{% block page_subtitle %}Manage your preferences{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl space-y-6">
+
+  <!-- ── Change Password ── -->
+  <div class="card p-6">
+    <h3 class="font-display font-bold text-lg mb-5 flex items-center gap-2">
+      <i data-lucide="lock" class="w-5 h-5 text-purple-500"></i> Change Password
+    </h3>
+    <form method="POST" action="{% url 'change_password' %}" data-validate-form class="space-y-4">
+      {% csrf_token %}
+      <div>
+        <label class="form-label">Current Password</label>
+        <div class="relative">
+          <input type="password" name="current_password" class="form-input pl-10" data-validate="required" placeholder="Current password"/>
+          <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">New Password</label>
+        <div class="relative">
+          <input type="password" name="new_password" class="form-input pl-10" data-validate="required|password" placeholder="New password"/>
+          <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Confirm New Password</label>
+        <div class="relative">
+          <input type="password" name="confirm_password" class="form-input pl-10" data-validate="required" placeholder="Confirm new password"/>
+          <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary px-8">Update Password</button>
+    </form>
+  </div>
+
+  <!-- ── Appearance ── -->
+  <div class="card p-6">
+    <h3 class="font-display font-bold text-lg mb-5 flex items-center gap-2">
+      <i data-lucide="palette" class="w-5 h-5 text-purple-500"></i> Appearance
+    </h3>
+    <div class="space-y-4">
+      <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl">
+        <div>
+          <p class="font-semibold text-sm">Dark Mode</p>
+          <p class="text-xs text-gray-400 mt-0.5">Switch between light and dark theme</p>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" data-dark-toggle id="darkModeToggle"/>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="p-4 bg-gray-50 dark:bg-white/5 rounded-2xl">
+        <p class="font-semibold text-sm mb-3">Theme Color</p>
+        <div class="flex gap-3">
+          {% for color, label in theme_colors %}
+          <button class="w-9 h-9 rounded-xl border-2 border-transparent hover:border-gray-400 transition color-btn" data-color="{{ color }}" title="{{ label }}"></button>
+          {% empty %}
+          <button class="w-9 h-9 rounded-xl border-2 border-gray-900 dark:border-white color-btn" data-color="#7C3AED" title="Purple (default)"></button>
+          <button class="w-9 h-9 rounded-xl border-2 border-transparent hover:border-gray-400 transition color-btn" data-color="#EC4899" title="Pink"></button>
+          <button class="w-9 h-9 rounded-xl border-2 border-transparent hover:border-gray-400 transition color-btn" data-color="#6366F1" title="Indigo"></button>
+          <button class="w-9 h-9 rounded-xl border-2 border-transparent hover:border-gray-400 transition color-btn" data-color="#0EA5E9" title="Sky Blue"></button>
+          <button class="w-9 h-9 rounded-xl border-2 border-transparent hover:border-gray-400 transition color-btn" data-color="#10B981" title="Emerald"></button>
+          {% endfor %}
+        </div>
+      </div>
+      <script>document.querySelectorAll('.color-btn').forEach(b => b.style.backgroundColor = b.dataset.color);</script>
+    </div>
+  </div>
+
+  <!-- ── Language ── -->
+  <div class="card p-6">
+    <h3 class="font-display font-bold text-lg mb-5 flex items-center gap-2">
+      <i data-lucide="globe" class="w-5 h-5 text-purple-500"></i> Language & Region
+    </h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="form-label">Display Language</label>
+        <select class="form-input" name="language">
+          <option value="en">English</option>
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="ta">தமிழ் (Tamil)</option>
+          <option value="te">తెలుగు (Telugu)</option>
+          <option value="bn">বাংলা (Bengali)</option>
+          <option value="gu">ગુજરાતી (Gujarati)</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Timezone</label>
+        <select class="form-input" name="timezone">
+          <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+          <option value="UTC">UTC</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-primary mt-4 px-6">Save Language Settings</button>
+  </div>
+
+  <!-- ── Notification Settings ── -->
+  <div class="card p-6">
+    <h3 class="font-display font-bold text-lg mb-5 flex items-center gap-2">
+      <i data-lucide="bell" class="w-5 h-5 text-purple-500"></i> Notification Preferences
+    </h3>
+    <div class="space-y-3">
+      {% for setting in notif_settings %}
+      <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl">
+        <div><p class="font-semibold text-sm">{{ setting.label }}</p><p class="text-xs text-gray-400">{{ setting.description }}</p></div>
+        <label class="toggle"><input type="checkbox" {% if setting.enabled %}checked{% endif %}/><span class="toggle-slider"></span></label>
+      </div>
+      {% empty %}
+      <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl">
+        <div><p class="font-semibold text-sm">SOS Alerts</p><p class="text-xs text-gray-400">Notifications for SOS triggers</p></div>
+        <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+      </div>
+      <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl">
+        <div><p class="font-semibold text-sm">Job Recommendations</p><p class="text-xs text-gray-400">New matching jobs via email</p></div>
+        <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+      </div>
+      <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl">
+        <div><p class="font-semibold text-sm">Mentor Session Reminders</p><p class="text-xs text-gray-400">30 minutes before your session</p></div>
+        <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+      </div>
+      <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl">
+        <div><p class="font-semibold text-sm">Scholarship Deadlines</p><p class="text-xs text-gray-400">Alerts 7 days before deadline</p></div>
+        <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+      </div>
+      <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl">
+        <div><p class="font-semibold text-sm">Weekly Digest</p><p class="text-xs text-gray-400">Summary of your activity every Monday</p></div>
+        <label class="toggle"><input type="checkbox"/><span class="toggle-slider"></span></label>
+      </div>
+      {% endfor %}
+    </div>
+    <button class="btn-primary mt-4 px-6">Save Notification Settings</button>
+  </div>
+
+  <!-- ── Privacy & Security ── -->
+  <div class="card p-6">
+    <h3 class="font-display font-bold text-lg mb-5 flex items-center gap-2">
+      <i data-lucide="shield" class="w-5 h-5 text-purple-500"></i> Privacy & Security
+    </h3>
+    <div class="space-y-3">
+      <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl">
+        <div><p class="font-semibold text-sm">Two-Factor Authentication</p><p class="text-xs text-gray-400">Add an extra layer of security</p></div>
+        <button class="btn-outline text-xs py-1.5 px-3">Enable 2FA</button>
+      </div>
+      <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl">
+        <div><p class="font-semibold text-sm">Location Sharing</p><p class="text-xs text-gray-400">Allow continuous background tracking</p></div>
+        <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+      </div>
+      <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl">
+        <div><p class="font-semibold text-sm">Profile Visibility</p><p class="text-xs text-gray-400">Allow mentors to see your profile</p></div>
+        <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Danger Zone ── -->
+  <div class="card p-6 border-red-200 dark:border-red-900/40">
+    <h3 class="font-display font-bold text-lg mb-4 text-red-600 flex items-center gap-2">
+      <i data-lucide="alert-triangle" class="w-5 h-5"></i> Danger Zone
+    </h3>
+    <div class="space-y-3">
+      <div class="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-900/30">
+        <div><p class="font-semibold text-sm text-red-700 dark:text-red-400">Deactivate Account</p><p class="text-xs text-gray-500">Temporarily disable your account</p></div>
+        <button class="px-4 py-2 rounded-xl border-2 border-red-400 text-red-500 text-sm font-semibold hover:bg-red-50 transition" data-modal-open="deactivateModal">Deactivate</button>
+      </div>
+      <div class="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-900/30">
+        <div><p class="font-semibold text-sm text-red-700 dark:text-red-400">Delete Account</p><p class="text-xs text-gray-500">Permanently delete all your data</p></div>
+        <button class="btn-danger text-sm py-2 px-4" data-modal-open="deleteModal">Delete</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Delete Modal -->
+<div id="deleteModal" class="modal-overlay">
+  <div class="modal-box text-center">
+    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="trash-2" class="w-8 h-8 text-red-500"></i></div>
+    <h3 class="font-display font-bold text-xl mb-2 text-red-600">Delete Account?</h3>
+    <p class="text-gray-500 text-sm mb-6">This action is permanent. All your data will be deleted and cannot be recovered.</p>
+    <div class="flex gap-3">
+      <button data-modal-close="deleteModal" class="btn-outline flex-1 py-3">Cancel</button>
+      <a href="{% url 'delete_account' %}" class="btn-danger flex-1 py-3 text-center block">Yes, Delete</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
