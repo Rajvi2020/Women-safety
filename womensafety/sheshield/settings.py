@@ -39,6 +39,18 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # SheShield core app
     'core',
+    # Modular Apps
+    'accounts',
+    'dashboard',
+    'profile',
+    'safety',
+    'career',
+    'mentor',
+    'jobs',
+    'scholarships',
+    'resources',
+    'notifications',
+    'adminpanel',
 ]
 
 MIDDLEWARE = [
@@ -64,6 +76,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.notifications_processor',
             ],
         },
     },

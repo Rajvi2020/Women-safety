@@ -1,7 +1,7 @@
 {% load static %}
 <!-- ══════════════════════════════════════
      TOP NAVBAR COMPONENT
-     Usage: {% include 'components/navbar.html' %}
+     Usage: include 'components/navbar.html'
 ══════════════════════════════════════ -->
 <nav class="navbar flex items-center justify-between px-4 lg:px-6 gap-4">
   <!-- Left: Sidebar toggle + Page title -->
@@ -40,19 +40,21 @@
     <div class="relative">
       <button id="notifBell" class="w-9 h-9 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center hover:bg-purple-50 dark:hover:bg-purple-900/30 transition relative">
         <i data-lucide="bell" class="w-5 h-5 text-gray-500 dark:text-gray-300"></i>
+        {% if unread_notifications_count > 0 %}
         <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+        {% endif %}
       </button>
       <!-- Notification Panel -->
       <div id="notifPanel" class="dropdown-menu w-80 right-0">
         <div class="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-white/10">
           <p class="font-semibold text-sm">Notifications</p>
-          <button class="text-xs text-purple-600 hover:underline">Mark all read</button>
+          <button class="text-xs text-purple-600 hover:underline" onclick="markAllRead()">Mark all read</button>
         </div>
         <!-- Notif Items -->
         <div class="max-h-72 overflow-y-auto">
           {% for notif in recent_notifications %}
           <a href="{% url 'notifications' %}" class="dropdown-item py-3 border-b border-gray-50 dark:border-white/5">
-            <div class="w-8 h-8 rounded-full gradient-bg flex items-center justify-center flex-shrink-0 text-white text-xs">🔔</div>
+            <div class="w-8 h-8 rounded-full gradient-bg flex items-center justify-center flex-shrink-0 text-white text-xs">{{ notif.icon|default:'🔔' }}</div>
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium truncate">{{ notif.title }}</p>
               <p class="text-xs text-gray-400 truncate">{{ notif.created_at|timesince }} ago</p>
@@ -104,4 +106,21 @@
       </div>
     </div>
   </div>
+</div>
+
+<script>
+function markAllRead() {
+  fetch("{% url 'mark_all_notifications_read' %}", {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": "{{ csrf_token }}",
+      "Content-Type": "application/json"
+    }
+  }).then(res => {
+    if (res.ok) {
+      window.location.reload();
+    }
+  });
+}
+</script>
 </nav>

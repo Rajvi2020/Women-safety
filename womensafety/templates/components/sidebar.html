@@ -1,7 +1,7 @@
 {% load static %}
 <!-- ══════════════════════════════════════
      SIDEBAR COMPONENT
-     Usage: {% include 'components/sidebar.html' %}
+     Usage: include 'components/sidebar.html'
 ══════════════════════════════════════ -->
 
 <!-- Mobile Overlay -->
@@ -48,7 +48,9 @@
     <a href="{% url 'notifications' %}" class="sidebar-link relative" id="navNotif">
       <i data-lucide="bell" class="icon"></i>
       <span class="sidebar-text">Notifications</span>
-      <span class="ml-auto sidebar-text bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">3</span>
+      {% if unread_notifications_count > 0 %}
+      <span class="ml-auto sidebar-text bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">{{ unread_notifications_count }}</span>
+      {% endif %}
     </a>
 
     <!-- Safety -->
@@ -130,7 +132,14 @@
       <span class="sidebar-text">Settings</span>
     </a>
 
-    {% if request.user.is_staff %}
+    {% if request.user.role == 'mentor' %}
+    <a href="{% url 'mentorship_requests' %}" class="sidebar-link text-blue-600 dark:text-blue-400" id="navRequests">
+      <i data-lucide="calendar" class="icon"></i>
+      <span class="sidebar-text font-bold">Session Requests</span>
+    </a>
+    {% endif %}
+
+    {% if request.user.is_staff or request.user.role == 'admin' %}
     <a href="{% url 'admin_dashboard' %}" class="sidebar-link text-purple-600 dark:text-purple-400">
       <i data-lucide="shield" class="icon"></i>
       <span class="sidebar-text font-bold">Admin Panel</span>

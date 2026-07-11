@@ -48,7 +48,6 @@
           <span class="text-xs text-gray-400">{{ d|default:'Mon' }}</span>
         </div>
         {% empty %}
-        {% for d, pct in 'Mon,Mon:40 Tue,Tue:65 Wed,Wed:80 Thu,Thu:55 Fri,Fri:90 Sat,Sat:70 Sun,Sun:45'|split %}{% endfor %}
         <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full rounded-t-lg gradient-bg" style="height:40%"></div><span class="text-xs text-gray-400">Mon</span></div>
         <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full rounded-t-lg gradient-bg" style="height:65%"></div><span class="text-xs text-gray-400">Tue</span></div>
         <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full rounded-t-lg gradient-bg" style="height:80%"></div><span class="text-xs text-gray-400">Wed</span></div>
@@ -210,14 +209,24 @@
 </div>
 
 <script>
+function getCsrf() { return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''; }
+function showToast(msg, type='info') {
+  const t = document.createElement('div'); t.className = `toast show ${type}`; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3000);
+}
 function approveMentor(id) {
-  fetch(`/admin/mentors/${id}/approve/`, { method:'POST', headers:{'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1]||''} })
-    .then(() => { Toast?.success('Mentor approved!'); window.location.reload(); });
+  fetch(`/adminpanel/mentors/${id}/approve/`, { method:'POST', headers:{'X-CSRFToken': getCsrf()} })
+    .then(r => r.json())
+    .then(data => { showToast(data.message || 'Mentor approved! ✓', 'success'); document.querySelector(`#mentor-row-${id}`)?.remove(); })
+    .catch(() => showToast('Error approving mentor', 'error'));
 }
 function rejectMentor(id) {
-  if(confirm('Reject this mentor?'))
-    fetch(`/admin/mentors/${id}/reject/`, { method:'POST', headers:{'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1]||''} })
-      .then(() => { Toast?.info('Mentor rejected'); window.location.reload(); });
+  if(!confirm('Reject this mentor?')) return;
+  fetch(`/adminpanel/mentors/${id}/reject/`, { method:'POST', headers:{'X-CSRFToken': getCsrf()} })
+    .then(r => r.json())
+    .then(data => { showToast(data.message || 'Mentor rejected', 'info'); document.querySelector(`#mentor-row-${id}`)?.remove(); })
+    .catch(() => showToast('Error rejecting mentor', 'error'));
 }
 </script>
 {% endblock %}

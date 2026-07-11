@@ -1,0 +1,9 @@
+{
+  "python.analysis.typeCheckingMode": "off",
+  "python.analysis.diagnosticMode": "openFilesOnly",
+  "python.analysis.ignore": ["**"],
+  "python.linting.enabled": false,
+  "python.linting.pylintEnabled": false,
+  "python.analysis.reportMissingImports": "none",
+  "python.analysis.reportUndefinedVariable": "none"
+}

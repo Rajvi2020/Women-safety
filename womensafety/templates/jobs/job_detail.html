@@ -26,7 +26,7 @@
             <span class="badge badge-green">{{ job.experience|default:'3–5 years' }}</span>
           </div>
         </div>
-        <button id="saveJobBtn" onclick="toggleSave(this)" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-white/10 flex items-center justify-center text-gray-400 hover:text-pink-500 hover:bg-pink-50 transition flex-shrink-0">
+        <button id="saveJobBtn" onclick="toggleSave(this)" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-white/10 flex items-center justify-center {% if saved %}text-pink-500 bg-pink-50{% else %}text-gray-400 hover:text-pink-500 hover:bg-pink-50{% endif %} transition flex-shrink-0">
           <i data-lucide="heart" class="w-5 h-5"></i>
         </button>
       </div>
@@ -102,7 +102,7 @@
         <p class="text-2xl font-bold gradient-text">{{ job.salary|default:'₹18–25 LPA' }}</p>
         <p class="text-xs text-gray-400 mt-0.5">Per Annum</p>
       </div>
-      {% if job.applied %}
+      {% if applied %}
       <div class="text-center py-3 mb-3 bg-green-50 dark:bg-green-900/20 rounded-2xl text-green-700 dark:text-green-400 font-semibold text-sm">
         ✓ Already Applied
       </div>
@@ -149,8 +149,29 @@
 
 <script>
 function toggleSave(btn) {
-  btn.classList.toggle('text-pink-500');
-  Toast.info(btn.classList.contains('text-pink-500') ? '❤️ Job saved!' : 'Job removed from saved');
+  fetch(`/jobs/{{ job.id }}/save/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'saved') {
+      const heartBtn = document.getElementById('saveJobBtn');
+      if (heartBtn) {
+        heartBtn.classList.add('text-pink-500', 'bg-pink-50');
+        heartBtn.classList.remove('text-gray-400');
+      }
+      Toast?.success('❤️ Job saved successfully!');
+    } else if (data.status === 'already_saved') {
+      Toast?.info('Job is already saved!');
+    }
+  })
+  .catch(err => {
+    Toast?.error('Failed to save job.');
+  });
 }
 </script>
 {% endblock %}

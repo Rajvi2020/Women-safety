@@ -1,0 +1,157 @@
+{% extends 'layouts/admin_layout.html' %}
+{% load static %}
+{% block title %}Mentor Approvals{% endblock %}
+{% block page_title %}Mentor Approval Management{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 gap-4">
+    <div class="card p-5 flex items-center gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+        <i data-lucide="clock" class="w-6 h-6 text-orange-500"></i>
+      </div>
+      <div><p class="text-2xl font-bold">{{ pending_count }}</p><p class="text-sm text-gray-500">Pending Approval</p></div>
+    </div>
+    <div class="card p-5 flex items-center gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+        <i data-lucide="user-check" class="w-6 h-6 text-green-500"></i>
+      </div>
+      <div><p class="text-2xl font-bold">{{ approved_count }}</p><p class="text-sm text-gray-500">Approved Mentors</p></div>
+    </div>
+  </div>
+
+  <!-- Pending Approvals -->
+  <div class="card p-6">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-display font-bold text-xl">⏳ Pending Approvals</h3>
+      <span class="badge badge-red">{{ pending_count }} pending</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="data-table">
+        <thead><tr><th>Mentor</th><th>Title</th><th>Company</th><th>Experience</th><th>Actions</th></tr></thead>
+        <tbody id="pendingBody">
+          {% for mentor in pending_mentors_list %}
+          <tr id="mentor-row-{{ mentor.id }}">
+            <td>
+              <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name={{ mentor.user.first_name }}&background=7C3AED&color=fff&size=36" class="avatar w-9 h-9"/>
+                <div>
+                  <p class="font-semibold text-sm">{{ mentor.user.get_full_name }}</p>
+                  <p class="text-xs text-gray-400">{{ mentor.user.email }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="text-sm">{{ mentor.title|default:'—' }}</td>
+            <td class="text-sm text-gray-500">{{ mentor.company|default:'—' }}</td>
+            <td class="text-sm">{{ mentor.experience|default:'0' }} yrs</td>
+            <td>
+              <div class="flex gap-2">
+                <button class="btn-primary text-xs py-1.5 px-4" data-id="{{ mentor.id }}" data-action="approve">✓ Approve</button>
+                <button class="text-xs px-4 py-1.5 rounded-lg border border-red-300 text-red-500 hover:bg-red-50 transition" data-id="{{ mentor.id }}" data-action="reject">✗ Reject</button>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center py-8 text-gray-400">🎉 No pending approvals — all mentors reviewed!</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Approved Mentors -->
+  <div class="card p-6">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-display font-bold text-xl">✅ Approved Mentors</h3>
+      <span class="badge badge-green">{{ approved_count }} active</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="data-table">
+        <thead><tr><th>Mentor</th><th>Title</th><th>Company</th><th>Rating</th><th>Sessions</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for mentor in approved_mentors %}
+          <tr>
+            <td>
+              <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name={{ mentor.user.first_name }}&background=059669&color=fff&size=36" class="avatar w-9 h-9"/>
+                <div>
+                  <p class="font-semibold text-sm">{{ mentor.user.get_full_name }}</p>
+                  <p class="text-xs text-gray-400">{{ mentor.user.email }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="text-sm">{{ mentor.title|default:'—' }}</td>
+            <td class="text-sm text-gray-500">{{ mentor.company|default:'—' }}</td>
+            <td class="text-sm">⭐ {{ mentor.rating|default:'0.0' }}</td>
+            <td class="text-sm">{{ mentor.sessions_count|default:'0' }}</td>
+            <td>
+              <button class="text-xs px-3 py-1.5 rounded-lg border border-red-300 text-red-500 hover:bg-red-50 transition" data-id="{{ mentor.id }}" data-action="reject">Revoke</button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-center py-6 text-gray-400">No approved mentors yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function getCsrf() {
+  return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+}
+
+function showToast(msg, type='info') {
+  const t = document.createElement('div');
+  t.className = `toast show ${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3500);
+}
+
+// Event delegation for approve/reject buttons
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+  if (action === 'approve') approveMentor(id, btn);
+  if (action === 'reject') rejectMentor(id, btn);
+});
+
+function approveMentor(id, btn) {
+  btn.disabled = true;
+  btn.textContent = '…';
+  fetch(`/adminpanel/mentors/${id}/approve/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCsrf() }
+  })
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById(`mentor-row-${id}`)?.remove();
+    showToast(data.message || 'Mentor approved! ✓', 'success');
+  })
+  .catch(() => { btn.disabled = false; btn.textContent = '✓ Approve'; showToast('Error approving mentor', 'error'); });
+}
+
+function rejectMentor(id, btn) {
+  if (!confirm('Reject and remove this mentor application?')) return;
+  btn.disabled = true;
+  fetch(`/adminpanel/mentors/${id}/reject/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCsrf() }
+  })
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById(`mentor-row-${id}`)?.remove();
+    btn.closest('tr')?.remove();
+    showToast(data.message || 'Mentor rejected', 'info');
+  })
+  .catch(() => { btn.disabled = false; showToast('Error rejecting mentor', 'error'); });
+}
+</script>
+{% endblock %}

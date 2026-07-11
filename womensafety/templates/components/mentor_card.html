@@ -1,0 +1,43 @@
+<div class="card p-5 mentor-item" data-aos>
+  <div class="flex items-start gap-4 mb-4">
+    <img src="{% if mentor.user.profile_photo %}{{ mentor.user.profile_photo.url }}{% else %}https://ui-avatars.com/api/?name={{ mentor.user.first_name|urlencode }}+{{ mentor.user.last_name|urlencode }}&background=7C3AED&color=fff&size=64{% endif %}" class="avatar w-16 h-16" alt="Mentor"/>
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2 flex-wrap">
+        <h4 class="font-bold">{{ mentor.user.get_full_name }}</h4>
+        {% if mentor.is_verified %}
+        <span class="badge badge-green text-xs">✓ Verified</span>
+        {% endif %}
+      </div>
+      <p class="text-sm text-gray-500 mt-0.5">{{ mentor.title }}{% if mentor.company %} · {{ mentor.company }}{% endif %}</p>
+      <div class="flex items-center gap-1 mt-1">
+        <!-- Render 5 stars -->
+        <span class="text-xs text-gray-400">⭐ {{ mentor.rating|default:"5.0" }} ({{ mentor.review_count|default:"0" }} reviews)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap gap-1.5 mb-4">
+    {% for skill in mentor.skills.all %}
+    <span class="skill-tag text-xs">{{ skill.skill.name }}</span>
+    {% empty %}
+    <span class="skill-tag text-xs">Career Guidance</span>
+    {% endfor %}
+  </div>
+
+  <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4">
+    {{ mentor.bio }}
+  </p>
+
+  <div class="flex items-center justify-between text-sm mb-4">
+    <div class="flex items-center gap-1.5 {% if mentor.is_online %}text-green-600{% else %}text-gray-500{% endif %}">
+      <div class="w-2 h-2 {% if mentor.is_online %}bg-green-500{% else %}bg-gray-400{% endif %} rounded-full"></div>
+      <span class="text-xs font-medium">{% if mentor.is_online %}Online{% else %}Offline{% endif %}</span>
+    </div>
+    <span class="text-purple-600 font-bold">{{ mentor.fee }}</span>
+  </div>
+
+  <div class="flex gap-2">
+    <a href="{% url 'mentor_detail' pk=mentor.id %}" class="btn-outline flex-1 text-sm py-2 text-center">View Profile</a>
+    <button class="btn-primary flex-1 text-sm py-2" data-modal-open="bookSessionModal" onclick="setMentor('{{ mentor.user.get_full_name|escapejs }}', '{{ mentor.id }}')">Book Session</button>
+  </div>
+</div>

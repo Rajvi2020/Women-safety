@@ -52,7 +52,7 @@
               <h4 class="font-bold text-base">{{ job.title }}</h4>
               <p class="text-sm text-gray-500">{{ job.company }} · {{ job.location }}</p>
             </div>
-            <button class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-white/10 flex items-center justify-center text-gray-400 hover:text-pink-500 hover:bg-pink-50 transition flex-shrink-0 save-job-btn" onclick="event.stopPropagation(); toggleSave(this)">
+            <button class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-white/10 flex items-center justify-center {% if job.id in saved_job_ids %}text-pink-500 bg-pink-50{% else %}text-gray-400 hover:text-pink-500 hover:bg-pink-50{% endif %} transition flex-shrink-0 save-job-btn" onclick="event.stopPropagation(); toggleSave(this, {{ job.id }})">
               <i data-lucide="heart" class="w-4 h-4"></i>
             </button>
           </div>
@@ -163,16 +163,66 @@
 </div>
 
 <script>
-document.getElementById('jobSearch')?.addEventListener('input', function() {
-  const q = this.value.toLowerCase();
-  document.querySelectorAll('.job-item').forEach(el => {
-    el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
-  });
+const searchInput = document.getElementById('jobSearch');
+const categoryFilter = document.getElementById('categoryFilter');
+const locationFilter = document.getElementById('locationFilter');
+const typeFilter = document.getElementById('typeFilter');
+
+function applyFilters() {
+  const q = searchInput?.value.trim() || '';
+  const category = categoryFilter?.value || '';
+  const location = locationFilter?.value || '';
+  const type = typeFilter?.value || '';
+
+  const url = new URL(window.location.href);
+  if (q) url.searchParams.set('q', q); else url.searchParams.delete('q');
+  if (category) url.searchParams.set('category', category); else url.searchParams.delete('category');
+  if (location) url.searchParams.set('location', location); else url.searchParams.delete('location');
+  if (type) url.searchParams.set('type', type); else url.searchParams.delete('type');
+
+  window.location.href = url.pathname + url.search;
+}
+
+// Prefill form inputs from URLSearchParams
+const params = new URLSearchParams(window.location.search);
+if (searchInput) searchInput.value = params.get('q') || '';
+if (categoryFilter) categoryFilter.value = params.get('category') || '';
+if (locationFilter) locationFilter.value = params.get('location') || '';
+if (typeFilter) typeFilter.value = params.get('type') || '';
+
+// Add filter change event listeners
+categoryFilter?.addEventListener('change', applyFilters);
+locationFilter?.addEventListener('change', applyFilters);
+typeFilter?.addEventListener('change', applyFilters);
+
+// Bind enter key on search input
+searchInput?.addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') {
+    applyFilters();
+  }
 });
-function toggleSave(btn) {
-  btn.classList.toggle('text-pink-500');
-  btn.classList.toggle('bg-pink-50');
-  Toast?.info(btn.classList.contains('text-pink-500') ? '❤️ Job saved!' : 'Job removed');
+
+function toggleSave(btn, jobId) {
+  fetch(`/jobs/${jobId}/save/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'saved') {
+      btn.classList.add('text-pink-500', 'bg-pink-50');
+      btn.classList.remove('text-gray-400');
+      Toast?.success('❤️ Job saved successfully!');
+    } else if (data.status === 'already_saved') {
+      Toast?.info('Job is already saved!');
+    }
+  })
+  .catch(err => {
+    Toast?.error('Failed to save job.');
+  });
 }
 </script>
 {% endblock %}

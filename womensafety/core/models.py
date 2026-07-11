@@ -35,6 +35,14 @@ class User(AbstractUser):
         filled = sum(1 for f in fields if f)
         return int((filled / len(fields)) * 100)
 
+    @property
+    def dob(self):
+        return self.date_of_birth
+
+    @dob.setter
+    def dob(self, value):
+        self.date_of_birth = value
+
 
 class Education(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='educations')
@@ -114,6 +122,10 @@ class Mentor(models.Model):
 
     def __str__(self):
         return f"{self.user.get_full_name()} — {self.title}"
+
+    @property
+    def name(self):
+        return self.user.get_full_name() or self.user.username
 
 
 class MentorSkill(models.Model):
@@ -298,3 +310,41 @@ class RoadmapStep(models.Model):
 
     class Meta:
         ordering = ['order']
+
+    def __str__(self):
+        return self.title
+
+
+class LiveLocation(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='live_locations')
+    latitude = models.DecimalField(max_digits=10, decimal_places=7)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7)
+    location_name = models.CharField(max_length=255, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.user} at {self.latitude}, {self.longitude}"
+
+
+class VerifiedService(models.Model):
+    name = models.CharField(max_length=100)
+    number = models.CharField(max_length=20)
+    icon = models.CharField(max_length=10, default='🚑')
+    availability = models.CharField(max_length=50, default='24x7')
+
+    def __str__(self):
+        return self.name
+
+
+class SafeRoute(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='safe_routes')
+    start_location = models.CharField(max_length=255)
+    end_location = models.CharField(max_length=255)
+    travel_mode = models.CharField(max_length=20, default='walk')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user}: {self.start_location} -> {self.end_location}"

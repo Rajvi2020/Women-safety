@@ -11,18 +11,19 @@
   <div class="space-y-5">
     <div class="card p-5">
       <h3 class="font-display font-bold text-lg mb-4">Plan Your Route</h3>
-      <form id="routeForm" class="space-y-4">
+      <form id="routeForm" method="POST" action="{% url 'safe_route' %}" class="space-y-4">
+        {% csrf_token %}
         <div>
           <label class="form-label">From (Current Location)</label>
           <div class="relative">
-            <input type="text" id="fromLocation" class="form-input pl-10" placeholder="Auto-detected" value="{{ current_location|default:'' }}"/>
+            <input type="text" name="from" id="fromLocation" class="form-input pl-10" placeholder="Auto-detected" value="{{ current_location|default:'' }}" required/>
             <i data-lucide="map-pin" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-500"></i>
           </div>
         </div>
         <div>
           <label class="form-label">To (Destination)</label>
           <div class="relative">
-            <input type="text" id="toLocation" class="form-input pl-10" placeholder="Enter destination"/>
+            <input type="text" name="to" id="toLocation" class="form-input pl-10" placeholder="Enter destination" required/>
             <i data-lucide="navigation" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-pink-500"></i>
           </div>
         </div>

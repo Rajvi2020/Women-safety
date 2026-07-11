@@ -1,0 +1,16 @@
+# Pyrefly configuration for SheShield AI (Django project)
+# Suppresses false-positive errors from Django runtime patterns
+
+[pyrefly]
+# Exclude virtual/in-memory analysis files
+exclude = [
+  "**/__pyrefly_virtual__/**",
+  "**/inmemory/**",
+  "**/migrations/**",
+]
+
+# Allow unresolved imports (Django loads many things at runtime)
+ignore_missing_imports = true
+
+# Do not error on missing type stubs for Django
+python_version = "3.11"

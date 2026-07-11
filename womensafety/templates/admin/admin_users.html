@@ -37,7 +37,7 @@
         </thead>
         <tbody id="userTableBody">
           {% for user in users %}
-          <tr class="user-row">
+          <tr class="user-row" data-role="{{ user.role|lower }}">
             <td><input type="checkbox" class="accent-purple-600 row-check"/></td>
             <td>
               <div class="flex items-center gap-2">
@@ -49,15 +49,15 @@
             <td><span class="badge {% if user.role == 'mentor' %}badge-pink{% elif user.role == 'admin' %}badge-red{% else %}badge-purple{% endif %} text-xs">{{ user.role|capfirst }}</span></td>
             <td class="text-sm text-gray-500">{{ user.date_joined|date:'d M Y' }}</td>
             <td>
-              <span class="badge {% if user.is_active %}badge-green{% elif user.is_banned %}badge-red{% else %}badge-blue{% endif %} text-xs">
-                {% if user.is_active %}Active{% elif user.is_banned %}Banned{% else %}Inactive{% endif %}
+              <span class="badge status-badge {% if user.is_active %}badge-green{% else %}badge-red{% endif %} text-xs">
+                {% if user.is_active %}Active{% else %}Inactive{% endif %}
               </span>
             </td>
             <td>
               <div class="flex items-center gap-2">
                 <a href="{% url 'admin_user_detail' pk=user.id %}" class="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 hover:bg-blue-200 transition"><i data-lucide="eye" class="w-3.5 h-3.5"></i></a>
-                <button class="w-8 h-8 rounded-xl bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600 hover:bg-yellow-200 transition" onclick="banUser('{{ user.id }}')"><i data-lucide="{% if user.is_banned %}unlock{% else %}ban{% endif %}" class="w-3.5 h-3.5"></i></button>
-                <button class="w-8 h-8 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 hover:bg-red-200 transition" onclick="deleteUser('{{ user.id }}')"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                <button class="w-8 h-8 rounded-xl bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600 hover:bg-yellow-200 transition" onclick="banUser('{{ user.id }}', this)" title="Toggle active"><i data-lucide="{% if user.is_active %}ban{% else %}unlock{% endif %}" class="w-3.5 h-3.5"></i></button>
+                <button class="w-8 h-8 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 hover:bg-red-200 transition" onclick="deleteUser('{{ user.id }}', this)" title="Delete user"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
               </div>
             </td>
           </tr>
@@ -110,16 +110,76 @@
 </div>
 
 <script>
+const CSRF = () => document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+
 // Select all
 document.getElementById('selectAll')?.addEventListener('change', function() {
   document.querySelectorAll('.row-check').forEach(c => c.checked = this.checked);
 });
-// Search
+
+// Live search
 document.getElementById('userSearch')?.addEventListener('input', function() {
   const q = this.value.toLowerCase();
-  document.querySelectorAll('.user-row').forEach(row => { row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none'; });
+  document.querySelectorAll('.user-row').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
 });
-function banUser(id) { Toast?.info('User ban status toggled'); }
-function deleteUser(id) { if(confirm('Delete this user?')) Toast?.error('User deleted'); }
+
+// Role filter
+document.getElementById('roleFilter')?.addEventListener('change', function() {
+  const role = this.value.toLowerCase();
+  document.querySelectorAll('.user-row').forEach(row => {
+    row.style.display = (!role || row.dataset.role === role) ? '' : 'none';
+  });
+});
+
+function getCsrf() {
+  return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+}
+
+function banUser(id, btn) {
+  fetch(`/adminpanel/users/${id}/toggle-active/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCsrf() }
+  })
+  .then(r => r.json())
+  .then(data => {
+    const row = btn.closest('tr');
+    const statusCell = row.querySelector('.status-badge');
+    if (statusCell) {
+      statusCell.textContent = data.is_active ? 'Active' : 'Inactive';
+      statusCell.className = 'badge text-xs ' + (data.is_active ? 'badge-green' : 'badge-red');
+    }
+    showToast(data.status === 'activated' ? 'User activated ✓' : 'User deactivated', data.is_active ? 'success' : 'info');
+  })
+  .catch(() => showToast('Failed to update user', 'error'));
+}
+
+function deleteUser(id, btn) {
+  if (!confirm('Are you sure you want to permanently delete this user? This cannot be undone.')) return;
+  fetch(`/adminpanel/users/${id}/delete/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCsrf() }
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.status === 'deleted') {
+      btn.closest('tr')?.remove();
+      showToast(data.message, 'success');
+    } else {
+      showToast(data.message || 'Cannot delete user', 'error');
+    }
+  })
+  .catch(() => showToast('Failed to delete user', 'error'));
+}
+
+function showToast(msg, type='info') {
+  const t = document.createElement('div');
+  t.className = `toast show ${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3000);
+}
 </script>
 {% endblock %}
+

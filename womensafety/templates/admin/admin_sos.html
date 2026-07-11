@@ -89,7 +89,7 @@
             <td class="text-sm text-gray-500">{{ sos.created_at|date:'d M, H:i' }}</td>
             <td class="text-sm">{{ sos.duration|default:'—' }}</td>
             <td><span class="badge {% if sos.status == 'resolved' %}badge-green{% elif sos.status == 'active' %}badge-red{% else %}badge-blue{% endif %} text-xs">{{ sos.status|capfirst }}</span></td>
-            <td><button class="text-xs text-purple-600 hover:underline">View</button></td>
+            <td><button class="text-xs text-purple-600 hover:underline font-semibold" data-id="{{ sos.id }}" data-action="view-sos">👁 View</button></td>
           </tr>
           {% empty %}
           <tr><td><div class="flex items-center gap-2"><img src="https://ui-avatars.com/api/?name=Riya+M&background=7C3AED&color=fff&size=32" class="avatar w-8 h-8"/><div><p class="font-medium text-sm">Riya Mehta</p><p class="text-xs text-gray-400">+91 91234 56789</p></div></div></td><td class="text-sm text-gray-500">Mumbai, MH</td><td class="text-sm text-gray-500">11 Jul, 08:32</td><td class="text-sm">8 min</td><td><span class="badge badge-green text-xs">Resolved</span></td><td><button class="text-xs text-purple-600 hover:underline">View</button></td></tr>
@@ -99,20 +99,85 @@
       </table>
     </div>
   </div>
+
+  <!-- SOS Detail Modal -->
+  <div id="sosDetailModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:480px;">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="font-display font-bold text-xl text-red-600">🚨 SOS Alert Detail</h3>
+        <button data-modal-close="sosDetailModal" class="text-gray-400 hover:text-red-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div id="sosDetailContent" class="space-y-3 text-sm">
+        <div class="text-gray-400 text-center py-4">Loading…</div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
+function getCsrf() { return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''; }
+
+function showToast(msg, type='info') {
+  const t = document.createElement('div');
+  t.className = `toast show ${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3500);
+}
+
 function resolveAlert(id, btn) {
   if(!confirm('Mark this SOS as resolved?')) return;
-  fetch(`/admin/sos/${id}/resolve/`, {
+  fetch(`/adminpanel/sos/${id}/resolve/`, {
     method: 'POST',
-    headers: { 'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '' }
-  }).then(() => {
+    headers: { 'X-CSRFToken': getCsrf() }
+  }).then(r => r.json())
+  .then(data => {
     btn.closest('.sos-alert-item')?.remove();
-    Toast.success('✓ SOS marked as resolved');
-  }).catch(() => Toast.error('Failed to resolve'));
+    showToast('✓ SOS marked as resolved', 'success');
+  }).catch(() => showToast('Failed to resolve', 'error'));
 }
-// Auto refresh every 30s
-setInterval(() => { window.location.reload(); }, 30000);
+
+// Event delegation for SOS history view button
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('[data-action="view-sos"]');
+  if (btn) viewSos(btn.dataset.id);
+});
+
+function viewSos(id) {
+  const modal = document.getElementById('sosDetailModal');
+  const content = document.getElementById('sosDetailContent');
+  content.innerHTML = '<div class="text-gray-400 text-center py-4">Loading…</div>';
+  modal.classList.add('active');
+  fetch(`/adminpanel/sos/${id}/detail/`)
+  .then(r => r.json())
+  .then(sos => {
+    content.innerHTML = `
+      <div class="grid grid-cols-2 gap-3">
+        <div class="col-span-2 flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl">
+          <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(sos.user)}&background=DC2626&color=fff&size=44" class="avatar w-11 h-11"/>
+          <div><p class="font-bold">${sos.user}</p><p class="text-xs text-gray-400">${sos.email}</p></div>
+        </div>
+        <div class="p-3 bg-gray-50 dark:bg-white/5 rounded-xl"><p class="text-xs text-gray-400 mb-1">Phone</p><p class="font-semibold">${sos.phone}</p></div>
+        <div class="p-3 bg-gray-50 dark:bg-white/5 rounded-xl"><p class="text-xs text-gray-400 mb-1">Status</p><p class="font-semibold ${sos.status==='resolved'?'text-green-600':'text-red-600'}">${sos.status.toUpperCase()}</p></div>
+        <div class="col-span-2 p-3 bg-gray-50 dark:bg-white/5 rounded-xl"><p class="text-xs text-gray-400 mb-1">📍 Location</p><p class="font-semibold">${sos.location}</p></div>
+        <div class="p-3 bg-gray-50 dark:bg-white/5 rounded-xl"><p class="text-xs text-gray-400 mb-1">⏰ Triggered</p><p class="font-semibold">${sos.created_at}</p></div>
+        <div class="p-3 bg-gray-50 dark:bg-white/5 rounded-xl"><p class="text-xs text-gray-400 mb-1">✅ Resolved</p><p class="font-semibold">${sos.resolved_at}</p></div>
+      </div>`;
+  })
+  .catch(() => { content.innerHTML = '<p class="text-red-500 text-center py-4">Failed to load SOS details.</p>'; });
+}
+
+// Modal close handlers
+document.querySelectorAll('[data-modal-close]').forEach(btn => {
+  btn.addEventListener('click', () => document.getElementById(btn.dataset.modalClose)?.classList.remove('active'));
+});
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });
+});
+
+// Auto-refresh every 30 seconds
+setInterval(() => window.location.reload(), 30000);
 </script>
 {% endblock %}
+

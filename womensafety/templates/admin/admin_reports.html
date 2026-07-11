@@ -10,7 +10,7 @@
   <div class="card p-4 flex flex-col sm:flex-row gap-3">
     <select class="form-input text-sm w-full sm:w-40"><option>This Month</option><option>Last Month</option><option>Last 3 Months</option><option>This Year</option></select>
     <select class="form-input text-sm w-full sm:w-40"><option>All Modules</option><option>Safety</option><option>Career</option><option>Mentors</option><option>Jobs</option></select>
-    <button class="btn-primary text-sm py-2 px-4 flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i> Export Report</button>
+    <a href="{% url 'admin_export_report' %}" class="btn-primary text-sm py-2 px-4 flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i> Export Report</a>
   </div>
 
   <!-- KPI Cards -->

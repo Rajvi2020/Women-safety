@@ -1,0 +1,18 @@
+{
+  "include": ["**/*.py"],
+  "exclude": [
+    "**/__pyrefly_virtual__/**",
+    "**/inmemory/**",
+    "**/migrations/**",
+    "**/__pycache__/**"
+  ],
+  "ignore": ["**/migrations/**"],
+  "defineConstant": {},
+  "venvPath": ".",
+  "reportMissingImports": "none",
+  "reportMissingModuleSource": "none",
+  "reportUndefinedVariable": "none",
+  "pythonVersion": "3.11",
+  "pythonPlatform": "Windows",
+  "typeCheckingMode": "off"
+}
