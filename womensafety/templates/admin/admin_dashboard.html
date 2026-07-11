@@ -14,9 +14,9 @@
       <p class="text-purple-200 text-xs mt-1">↑ +23 this week</p>
     </div>
     <div class="stat-card text-white" style="background:linear-gradient(135deg,#EC4899,#BE185D);">
-      <p class="text-pink-200 text-xs font-semibold uppercase tracking-wider mb-2">Active Mentors</p>
-      <p class="text-3xl font-bold" data-counter="{{ total_mentors|default:'148' }}">0</p>
-      <p class="text-pink-200 text-xs mt-1">{{ pending_mentors|default:'12' }} pending approval</p>
+      <p class="text-pink-200 text-xs font-semibold uppercase tracking-wider mb-2">Total SOS Alerts</p>
+      <p class="text-3xl font-bold" data-counter="{{ total_sos_alerts|default:'148' }}">0</p>
+      <p class="text-pink-200 text-xs mt-1">All-time emergency signals</p>
     </div>
     <div class="stat-card text-white" style="background:linear-gradient(135deg,#6366F1,#4338CA);">
       <p class="text-indigo-200 text-xs font-semibold uppercase tracking-wider mb-2">SOS Alerts (Today)</p>
@@ -64,8 +64,8 @@
     <div class="card p-6 space-y-4">
       <h3 class="font-display font-bold text-lg">Platform Stats</h3>
       <div>
-        <div class="flex justify-between text-sm mb-1"><span>Mentor Sessions Booked</span><span class="font-bold">{{ sessions|default:'412' }}</span></div>
-        <div class="progress-bar"><div class="progress-fill" data-progress="72" style="width:0%"></div></div>
+        <div class="flex justify-between text-sm mb-1"><span>SOS Alerts Today</span><span class="font-bold">{{ sos_today|default:'0' }}</span></div>
+        <div class="progress-bar"><div class="progress-fill" data-progress="40" style="width:0%"></div></div>
       </div>
       <div>
         <div class="flex justify-between text-sm mb-1"><span>Job Applications</span><span class="font-bold">{{ applications|default:'1,284' }}</span></div>
@@ -157,55 +157,6 @@
     </div>
   </div>
 
-  <!-- ── Pending Mentor Approvals ── -->
-  <div class="card p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="font-display font-bold text-lg">Pending Mentor Approvals</h3>
-      <span class="badge badge-red">{{ pending_count|default:'5' }} pending</span>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="data-table">
-        <thead><tr><th>Mentor</th><th>Expertise</th><th>Applied</th><th>Documents</th><th>Action</th></tr></thead>
-        <tbody>
-          {% for mentor in pending_mentors_list %}
-          <tr>
-            <td>
-              <div class="flex items-center gap-2">
-                <img src="https://ui-avatars.com/api/?name={{ mentor.name }}&background=7C3AED&color=fff&size=32" class="avatar w-8 h-8"/>
-                <div><p class="font-medium text-sm">{{ mentor.name }}</p><p class="text-xs text-gray-400">{{ mentor.company }}</p></div>
-              </div>
-            </td>
-            <td class="text-sm">{{ mentor.expertise }}</td>
-            <td class="text-sm text-gray-500">{{ mentor.applied|date:'d M' }}</td>
-            <td><a href="{{ mentor.doc_url }}" class="text-xs text-purple-600 hover:underline">View Doc</a></td>
-            <td>
-              <div class="flex gap-2">
-                <button class="text-xs btn-primary py-1 px-3" onclick="approveMentor('{{ mentor.id }}')">Approve</button>
-                <button class="text-xs px-3 py-1 rounded-lg border border-red-300 text-red-500 hover:bg-red-50 transition" onclick="rejectMentor('{{ mentor.id }}')">Reject</button>
-              </div>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td><div class="flex items-center gap-2"><img src="https://ui-avatars.com/api/?name=Kavya+N&background=7C3AED&color=fff&size=32" class="avatar w-8 h-8"/><div><p class="font-medium text-sm">Dr. Kavya Nair</p><p class="text-xs text-gray-400">Infosys</p></div></div></td>
-            <td class="text-sm">Data Science</td>
-            <td class="text-sm text-gray-500">8 Jul</td>
-            <td><a href="#" class="text-xs text-purple-600 hover:underline">View Doc</a></td>
-            <td><div class="flex gap-2"><button class="text-xs btn-primary py-1 px-3">Approve</button><button class="text-xs px-3 py-1 rounded-lg border border-red-300 text-red-500 hover:bg-red-50 transition">Reject</button></div></td>
-          </tr>
-          <tr>
-            <td><div class="flex items-center gap-2"><img src="https://ui-avatars.com/api/?name=Meera+K&background=EC4899&color=fff&size=32" class="avatar w-8 h-8"/><div><p class="font-medium text-sm">Meera Krishnan</p><p class="text-xs text-gray-400">Wipro</p></div></div></td>
-            <td class="text-sm">Career Coach</td>
-            <td class="text-sm text-gray-500">9 Jul</td>
-            <td><a href="#" class="text-xs text-purple-600 hover:underline">View Doc</a></td>
-            <td><div class="flex gap-2"><button class="text-xs btn-primary py-1 px-3">Approve</button><button class="text-xs px-3 py-1 rounded-lg border border-red-300 text-red-500 hover:bg-red-50 transition">Reject</button></div></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
 </div>
 
 <script>
@@ -214,19 +165,6 @@ function showToast(msg, type='info') {
   const t = document.createElement('div'); t.className = `toast show ${type}`; t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3000);
-}
-function approveMentor(id) {
-  fetch(`/adminpanel/mentors/${id}/approve/`, { method:'POST', headers:{'X-CSRFToken': getCsrf()} })
-    .then(r => r.json())
-    .then(data => { showToast(data.message || 'Mentor approved! ✓', 'success'); document.querySelector(`#mentor-row-${id}`)?.remove(); })
-    .catch(() => showToast('Error approving mentor', 'error'));
-}
-function rejectMentor(id) {
-  if(!confirm('Reject this mentor?')) return;
-  fetch(`/adminpanel/mentors/${id}/reject/`, { method:'POST', headers:{'X-CSRFToken': getCsrf()} })
-    .then(r => r.json())
-    .then(data => { showToast(data.message || 'Mentor rejected', 'info'); document.querySelector(`#mentor-row-${id}`)?.remove(); })
-    .catch(() => showToast('Error rejecting mentor', 'error'));
 }
 </script>
 {% endblock %}

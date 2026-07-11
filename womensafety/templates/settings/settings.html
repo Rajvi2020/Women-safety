@@ -174,6 +174,62 @@
     </form>
   </div>
 
+  <!-- ── AI Coach Settings ── -->
+  <div class="card p-6">
+    <h3 class="font-display font-bold text-lg mb-5 flex items-center gap-2">
+      <i data-lucide="bot" class="w-5 h-5 text-purple-500"></i> AI Coach Settings
+    </h3>
+    <form method="POST" action="{% url 'settings' %}" class="space-y-4">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="ai_coach">
+      <div>
+        <label class="form-label">Gemini API Key</label>
+        <div class="relative">
+          <input type="password" name="gemini_api_key" class="form-input pl-10" value="{{ gemini_api_key|default:'' }}" placeholder="AIzaSy..."/>
+          <i data-lucide="key" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+        </div>
+        <p class="text-xs text-gray-400 mt-1">Paste your Google Gemini API Key here to enable live AI responses in the Career Coach chat.</p>
+      </div>
+      <button type="submit" class="btn-primary px-6">Save API Key</button>
+    </form>
+  </div>
+
+  <!-- ── Twilio SMS Settings ── -->
+  <div class="card p-6">
+    <h3 class="font-display font-bold text-lg mb-5 flex items-center gap-2">
+      <i data-lucide="message-square" class="w-5 h-5 text-purple-500"></i> Twilio SMS Settings
+    </h3>
+    <form method="POST" action="{% url 'settings' %}" class="space-y-4">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="twilio_sms">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">Twilio Account SID</label>
+          <div class="relative">
+            <input type="text" name="twilio_account_sid" class="form-input pl-10" value="{{ twilio_account_sid|default:'' }}" placeholder="AC..."/>
+            <i data-lucide="user" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+          </div>
+        </div>
+        <div>
+          <label class="form-label">Twilio Auth Token</label>
+          <div class="relative">
+            <input type="password" name="twilio_auth_token" class="form-input pl-10" value="{{ twilio_auth_token|default:'' }}" placeholder="Token..."/>
+            <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+          </div>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Twilio Phone Number</label>
+        <div class="relative">
+          <input type="text" name="twilio_phone_number" class="form-input pl-10" value="{{ twilio_phone_number|default:'' }}" placeholder="+1..."/>
+          <i data-lucide="phone" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+        </div>
+        <p class="text-xs text-gray-400 mt-1">Configure your Twilio credentials here to send real, live SMS emergency alerts to your contacts.</p>
+      </div>
+      <button type="submit" class="btn-primary px-6">Save SMS Settings</button>
+    </form>
+  </div>
+
   <!-- ── Danger Zone ── -->
   <div class="card p-6 border-red-200 dark:border-red-900/40">
     <h3 class="font-display font-bold text-lg mb-4 text-red-600 flex items-center gap-2">

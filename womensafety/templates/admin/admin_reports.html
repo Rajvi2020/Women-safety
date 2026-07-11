@@ -7,16 +7,17 @@
 <div class="space-y-6">
 
   <!-- Filter Row -->
+  <!-- Filter Row -->
   <div class="card p-4 flex flex-col sm:flex-row gap-3">
     <select class="form-input text-sm w-full sm:w-40"><option>This Month</option><option>Last Month</option><option>Last 3 Months</option><option>This Year</option></select>
-    <select class="form-input text-sm w-full sm:w-40"><option>All Modules</option><option>Safety</option><option>Career</option><option>Mentors</option><option>Jobs</option></select>
+    <select class="form-input text-sm w-full sm:w-40"><option>All Modules</option><option>Safety</option><option>Career</option><option>Jobs</option></select>
     <a href="{% url 'admin_export_report' %}" class="btn-primary text-sm py-2 px-4 flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i> Export Report</a>
   </div>
 
   <!-- KPI Cards -->
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
     <div class="card p-4 text-center"><p class="text-xs text-gray-400 mb-1">New Users</p><p class="text-2xl font-bold gradient-text" data-counter="{{ new_users|default:'284' }}">0</p><p class="text-xs text-green-500 mt-0.5">↑ 12% vs last month</p></div>
-    <div class="card p-4 text-center"><p class="text-xs text-gray-400 mb-1">Sessions Booked</p><p class="text-2xl font-bold gradient-text" data-counter="{{ sessions|default:'148' }}">0</p><p class="text-xs text-green-500 mt-0.5">↑ 8% vs last month</p></div>
+    <div class="card p-4 text-center"><p class="text-xs text-gray-400 mb-1">Resources Viewable</p><p class="text-2xl font-bold gradient-text" data-counter="{{ resources_count|default:'12' }}">0</p><p class="text-xs text-green-500 mt-0.5">↑ 8% vs last month</p></div>
     <div class="card p-4 text-center"><p class="text-xs text-gray-400 mb-1">Jobs Applied</p><p class="text-2xl font-bold gradient-text" data-counter="{{ applied|default:'523' }}">0</p><p class="text-xs text-green-500 mt-0.5">↑ 22% vs last month</p></div>
     <div class="card p-4 text-center"><p class="text-xs text-gray-400 mb-1">SOS Alerts</p><p class="text-2xl font-bold text-red-600" data-counter="{{ sos_total|default:'34' }}">0</p><p class="text-xs text-red-400 mt-0.5">↓ 5% vs last month</p></div>
   </div>
@@ -31,11 +32,10 @@
         {% for month, count in monthly_growth %}
         <div class="flex-1 flex flex-col items-center gap-1">
           <span class="text-xs text-gray-500 font-medium">{{ count|default:'0' }}</span>
-          <div class="w-full rounded-t-xl gradient-bg transition-all hover:opacity-80 dyn-bar" data-height="{{ count|default:'0'|divisibleby:5 }}" style="min-height:8px;"></div>
+          <div class="w-full rounded-t-xl gradient-bg transition-all hover:opacity-80 dyn-bar" data-height="{{ count|default:'0' }}" style="min-height:8px;"></div>
           <span class="text-xs text-gray-400">{{ month|default:'Jan' }}</span>
         </div>
         {% empty %}
-        {% for m,h in "Feb:45 Mar:60 Apr:80 May:55 Jun:90 Jul:75"|split:" " %}{% endfor %}
         <div class="flex-1 flex flex-col items-center gap-1"><span class="text-xs text-gray-500">124</span><div class="w-full rounded-t-xl gradient-bg" style="height:45%;"></div><span class="text-xs text-gray-400">Feb</span></div>
         <div class="flex-1 flex flex-col items-center gap-1"><span class="text-xs text-gray-500">189</span><div class="w-full rounded-t-xl gradient-bg" style="height:60%;"></div><span class="text-xs text-gray-400">Mar</span></div>
         <div class="flex-1 flex flex-col items-center gap-1"><span class="text-xs text-gray-500">241</span><div class="w-full rounded-t-xl gradient-bg" style="height:78%;"></div><span class="text-xs text-gray-400">Apr</span></div>
@@ -52,22 +52,19 @@
       <div class="flex items-center gap-6">
         <!-- SVG Donut -->
         <svg class="w-40 h-40 flex-shrink-0" viewBox="0 0 100 100">
-          <!-- Career 35% -->
-          <circle cx="50" cy="50" r="35" fill="none" stroke="#7C3AED" stroke-width="18" stroke-dasharray="77 143" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
-          <!-- Safety 25% -->
-          <circle cx="50" cy="50" r="35" fill="none" stroke="#EC4899" stroke-width="18" stroke-dasharray="55 165" stroke-dashoffset="-77" transform="rotate(-90 50 50)"/>
-          <!-- Jobs 20% -->
-          <circle cx="50" cy="50" r="35" fill="none" stroke="#6366F1" stroke-width="18" stroke-dasharray="44 176" stroke-dashoffset="-132" transform="rotate(-90 50 50)"/>
-          <!-- Mentors 20% -->
-          <circle cx="50" cy="50" r="35" fill="none" stroke="#10B981" stroke-width="18" stroke-dasharray="44 176" stroke-dashoffset="-176" transform="rotate(-90 50 50)"/>
+          <!-- Safety 45% (pink) -->
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#EC4899" stroke-width="18" stroke-dasharray="99 121" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
+          <!-- Career 30% (purple) -->
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#7C3AED" stroke-width="18" stroke-dasharray="66 154" stroke-dashoffset="-99" transform="rotate(-90 50 50)"/>
+          <!-- Jobs 25% (indigo) -->
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#6366F1" stroke-width="18" stroke-dasharray="55 165" stroke-dashoffset="-165" transform="rotate(-90 50 50)"/>
           <text x="50" y="46" text-anchor="middle" font-size="8" font-weight="bold" fill="#7C3AED">Total</text>
-          <text x="50" y="57" text-anchor="middle" font-size="10" font-weight="bold" fill="#1F2937">5.2K</text>
+          <text x="50" y="57" text-anchor="middle" font-size="10" font-weight="bold" fill="#1F2937">4.2K</text>
         </svg>
         <div class="space-y-2 text-sm flex-1">
-          <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-purple-600 flex-shrink-0"></div><span class="flex-1">Career</span><span class="font-bold">35%</span></div>
-          <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-pink-500 flex-shrink-0"></div><span class="flex-1">Safety</span><span class="font-bold">25%</span></div>
-          <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-indigo-500 flex-shrink-0"></div><span class="flex-1">Jobs</span><span class="font-bold">20%</span></div>
-          <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-green-500 flex-shrink-0"></div><span class="flex-1">Mentors</span><span class="font-bold">20%</span></div>
+          <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-pink-500 flex-shrink-0"></div><span class="flex-1">Safety (SOS)</span><span class="font-bold">45%</span></div>
+          <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-purple-600 flex-shrink-0"></div><span class="flex-1">Career</span><span class="font-bold">30%</span></div>
+          <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-indigo-500 flex-shrink-0"></div><span class="flex-1">Jobs</span><span class="font-bold">25%</span></div>
         </div>
       </div>
     </div>
@@ -114,5 +111,24 @@
   </div>
 
 </div>
-<script>document.querySelectorAll('.dyn-bar').forEach(b => b.style.height = b.dataset.height + '%');</script>
+<script>
+  const bars = document.querySelectorAll('.dyn-bar');
+  let maxVal = 0;
+  bars.forEach(b => {
+    const val = parseFloat(b.dataset.height) || 0;
+    if (val > maxVal) maxVal = val;
+  });
+  if (maxVal > 0) {
+    bars.forEach(b => {
+      const val = parseFloat(b.dataset.height) || 0;
+      b.style.height = (val / maxVal * 80 + 15) + '%';
+    });
+  } else {
+    bars.forEach(b => {
+      if (b.dataset.height) {
+        b.style.height = '8px';
+      }
+    });
+  }
+</script>
 {% endblock %}

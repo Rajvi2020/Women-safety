@@ -39,12 +39,117 @@ def career_chat_send_view(request):
 
     CareerMessage.objects.create(chat=chat, role='user', content=user_msg)
 
-    # Simplified response or call to actual LLM / Service helper
-    ai_reply = (
-        f"Thank you for sharing that! For your goal in '{chat.title}', I recommend developing "
-        "strong foundational skills in programming/logic, building practical projects, and connecting "
-        "with industry experts. Is there a specific role or stack you want to dive into?"
-    )
+    # Prepare chat history for Gemini API context
+    contents = []
+    # Fetch last 10 messages for conversation context
+    for msg in chat.messages.order_by('timestamp')[:10]:
+        role = "user" if msg.role == 'user' else "model"
+        contents.append({
+            "role": role,
+            "parts": [{"text": msg.content}]
+        })
+
+    import os
+    from django.conf import settings
+    import requests
+
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    if not api_key:
+        env_path = os.path.join(settings.BASE_DIR, '.env')
+        if os.path.exists(env_path):
+            with open(env_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    if '=' in line and not line.strip().startswith('#'):
+                        k, v = line.strip().split('=', 1)
+                        if k.strip() == 'GEMINI_API_KEY':
+                            api_key = v.strip().strip("'").strip('"')
+                            os.environ['GEMINI_API_KEY'] = api_key
+                            break
+
+    if not api_key:
+        ai_reply = (
+            "Gemini API Key is not set. Please go to the Settings page in SheShield, "
+            "scroll down to 'AI Coach Settings', paste your Gemini API Key, and save it."
+        )
+    else:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+        
+        system_instruction = {
+            "parts": [
+                {
+                    "text": (
+                        "You are SheShield Career AI, a helpful, supportive, and professional career advisor for women. "
+                        "Provide clear, practical, actionable, and encouraging career advice, resume tips, and interview prep suggestions."
+                    )
+                }
+            ]
+        }
+        
+        headers = {
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "contents": contents,
+            "systemInstruction": system_instruction
+        }
+        
+        try:
+            response = requests.post(url, json=payload, headers=headers)
+            if response.status_code == 200:
+                res_data = response.json()
+                try:
+                    ai_reply = res_data['candidates'][0]['content']['parts'][0]['text']
+                except (KeyError, IndexError):
+                    ai_reply = f"Error parsing Gemini response: {response.text}"
+            else:
+                try:
+                    res_json = response.json()
+                    err_msg = res_json.get('error', {}).get('message', response.text)
+                except ValueError:
+                    err_msg = response.text
+                
+                if 'quota' in err_msg.lower() or 'exhausted' in err_msg.lower() or response.status_code == 429:
+                    raise Exception(f"Quota Exceeded: {err_msg}")
+                else:
+                    ai_reply = f"Gemini API Error (status {response.status_code}): {err_msg}"
+        except Exception as e:
+            err_str = str(e).lower()
+            if 'quota' in err_str or '429' in err_str:
+                msg_lower = user_msg.lower()
+                if 'resume' in msg_lower or 'cv' in msg_lower:
+                    ai_reply = (
+                        "⚠️ **[SIMULATED - Gemini API Quota Exceeded]**\n\n"
+                        "To build an outstanding resume, focus on these three core areas:\n"
+                        "1. **Quantify achievements**: Instead of writing 'managed projects', write 'managed 5 cross-functional projects, delivering them 2 weeks ahead of schedule'.\n"
+                        "2. **ATS Optimization**: Match your resume keywords to the job description (e.g., specific libraries, methodologies, or tools).\n"
+                        "3. **Clear Formatting**: Use a clean, single-column design with standard headers (Experience, Education, Skills)."
+                    )
+                elif 'interview' in msg_lower or 'question' in msg_lower:
+                    ai_reply = (
+                        "⚠️ **[SIMULATED - Gemini API Quota Exceeded]**\n\n"
+                        "Here are key tips for interview preparation:\n"
+                        "1. **STAR Method**: Structure your answers to behavioral questions using Situation, Task, Action, and Result.\n"
+                        "2. **Company Research**: Understand the company's recent news, product lineup, and core mission statement.\n"
+                        "3. **Mock Interviews**: Practice talking out loud. Explain your technical choices step-by-step."
+                    )
+                elif 'career' in msg_lower or 'job' in msg_lower or 'skill' in msg_lower or 'learn' in msg_lower:
+                    ai_reply = (
+                        "⚠️ **[SIMULATED - Gemini API Quota Exceeded]**\n\n"
+                        "To advance your career in tech, focus on building:\n"
+                        "1. **Robust Portfolio**: Build 2-3 real-world projects and showcase them on your GitHub.\n"
+                        "2. **Continuous Upskilling**: Learn in-demand frameworks (like Django, React, or Flutter) and practice data structures.\n"
+                        "3. **Networking**: Connect with industry professionals on LinkedIn, participate in hackathons, and seek out mentor programs."
+                    )
+                else:
+                    ai_reply = (
+                        "⚠️ **[SIMULATED - Gemini API Quota Exceeded]**\n\n"
+                        "Hello! I am your career AI mentor. Focus on building strong technical foundations, working on "
+                        "open-source projects, keeping your LinkedIn updated, and preparing for behavioral questions. "
+                        "Let me know if you want specific tips on Resume building, Interview prep, or Upskilling!"
+                    )
+            else:
+                ai_reply = f"Error calling Gemini API: {str(e)}"
+
     CareerMessage.objects.create(chat=chat, role='ai', content=ai_reply)
 
     return JsonResponse({'reply': ai_reply, 'chat_id': chat.id})

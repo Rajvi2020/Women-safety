@@ -39,9 +39,6 @@
       <a href="{% url 'admin_users' %}" class="sidebar-link text-purple-200 hover:text-white hover:bg-white/10">
         <i data-lucide="users" class="icon"></i><span>User Management</span>
       </a>
-      <a href="{% url 'admin_mentors' %}" class="sidebar-link text-purple-200 hover:text-white hover:bg-white/10">
-        <i data-lucide="user-check" class="icon"></i><span>Mentor Approval</span>
-      </a>
       <a href="{% url 'admin_jobs' %}" class="sidebar-link text-purple-200 hover:text-white hover:bg-white/10">
         <i data-lucide="briefcase" class="icon"></i><span>Job Management</span>
       </a>
@@ -64,10 +61,23 @@
       </a>
     </nav>
 
-    <div class="px-4 pb-4">
-      <div class="flex items-center gap-3 p-3 bg-white/10 rounded-2xl">
-        <img src="https://ui-avatars.com/api/?name=Admin&background=EC4899&color=fff&size=36" class="avatar w-9 h-9"/>
-        <div><p class="text-white font-semibold text-sm">Admin</p><p class="text-purple-300 text-xs">Super Admin</p></div>
+    <div class="px-4 pb-4 mt-auto">
+      <div class="p-3 bg-white/10 rounded-2xl space-y-3">
+        <div class="flex items-center gap-3">
+          <img src="{% if request.user.profile_photo %}{{ request.user.profile_photo.url }}{% else %}https://ui-avatars.com/api/?name={{ request.user.first_name|urlencode }}+{{ request.user.last_name|urlencode }}&background=EC4899&color=fff&size=36{% endif %}" class="avatar w-9 h-9"/>
+          <div class="flex-1 min-w-0">
+            <p class="text-white font-semibold text-sm truncate">{{ request.user.get_full_name|default:'Admin' }}</p>
+            <p class="text-purple-300 text-xs truncate">Super Admin</p>
+          </div>
+        </div>
+        <div class="flex gap-2 pt-1 border-t border-white/10">
+          <a href="{% url 'profile' %}" class="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl bg-white/10 text-white text-xs hover:bg-white/20 transition" title="Edit Profile">
+            <i data-lucide="user" class="w-3.5 h-3.5"></i> Profile
+          </a>
+          <a href="{% url 'logout' %}" class="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl bg-red-500/20 text-red-300 text-xs hover:bg-red-500/40 hover:text-white transition" title="Log Out">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Logout
+          </a>
+        </div>
       </div>
     </div>
   </aside>

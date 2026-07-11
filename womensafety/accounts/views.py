@@ -7,8 +7,6 @@ from core.models import User
 from .forms import RegistrationForm, LoginForm
 
 def home_redirect(request):
-    if request.user.is_authenticated:
-        return redirect('dashboard')
     return redirect('login')
 
 
@@ -59,8 +57,6 @@ def register_view(request):
 
 
 def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('dashboard')
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -102,6 +98,79 @@ def reset_password_view(request):
     return render(request, 'auth/forgot_password.html')
 
 
+import os
+from django.conf import settings
+
+def load_gemini_key():
+    env_path = os.path.join(settings.BASE_DIR, '.env')
+    if os.path.exists(env_path):
+        with open(env_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                if '=' in line and not line.strip().startswith('#'):
+                    k, v = line.strip().split('=', 1)
+                    if k.strip() == 'GEMINI_API_KEY':
+                        return v.strip().strip("'").strip('"')
+    return ""
+
+def save_gemini_key(key):
+    env_path = os.path.join(settings.BASE_DIR, '.env')
+    lines = []
+    found = False
+    if os.path.exists(env_path):
+        with open(env_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                if line.strip().startswith('GEMINI_API_KEY='):
+                    lines.append(f"GEMINI_API_KEY={key}\n")
+                    found = True
+                else:
+                    lines.append(line)
+    if not found:
+        lines.append(f"GEMINI_API_KEY={key}\n")
+    with open(env_path, 'w', encoding='utf-8') as f:
+        f.writelines(lines)
+
+def load_twilio_settings():
+    env_path = os.path.join(settings.BASE_DIR, '.env')
+    config = {
+        'TWILIO_ACCOUNT_SID': '',
+        'TWILIO_AUTH_TOKEN': '',
+        'TWILIO_PHONE_NUMBER': ''
+    }
+    if os.path.exists(env_path):
+        with open(env_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                if '=' in line and not line.strip().startswith('#'):
+                    k, v = line.strip().split('=', 1)
+                    k_str = k.strip()
+                    if k_str in config:
+                        config[k_str] = v.strip().strip("'").strip('"')
+    return config
+
+def save_twilio_settings(sid, token, phone):
+    env_path = os.path.join(settings.BASE_DIR, '.env')
+    lines = []
+    keys_to_update = {
+        'TWILIO_ACCOUNT_SID': sid,
+        'TWILIO_AUTH_TOKEN': token,
+        'TWILIO_PHONE_NUMBER': phone
+    }
+    updated = set()
+    if os.path.exists(env_path):
+        with open(env_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                if '=' in line:
+                    line_key = line.split('=', 1)[0].strip()
+                    if line_key in keys_to_update:
+                        lines.append(f"{line_key}={keys_to_update[line_key]}\n")
+                        updated.add(line_key)
+                        continue
+                lines.append(line)
+    for k, v in keys_to_update.items():
+        if k not in updated:
+            lines.append(f"{k}={v}\n")
+    with open(env_path, 'w', encoding='utf-8') as f:
+        f.writelines(lines)
+
 @login_required
 def settings_view(request):
     if request.method == 'POST':
@@ -119,10 +188,32 @@ def settings_view(request):
             request.user.is_location_sharing = is_sharing
             request.user.save(update_fields=['is_location_sharing'])
             messages.success(request, 'Privacy & Security settings updated successfully!')
+        elif form_type == 'ai_coach':
+            key = request.POST.get('gemini_api_key', '').strip()
+            save_gemini_key(key)
+            os.environ['GEMINI_API_KEY'] = key
+            messages.success(request, 'Gemini API Key updated successfully!')
+        elif form_type == 'twilio_sms':
+            sid = request.POST.get('twilio_account_sid', '').strip()
+            token = request.POST.get('twilio_auth_token', '').strip()
+            phone = request.POST.get('twilio_phone_number', '').strip()
+            save_twilio_settings(sid, token, phone)
+            os.environ['TWILIO_ACCOUNT_SID'] = sid
+            os.environ['TWILIO_AUTH_TOKEN'] = token
+            os.environ['TWILIO_PHONE_NUMBER'] = phone
+            messages.success(request, 'Twilio SMS settings updated successfully!')
         else:
             messages.success(request, 'Settings updated successfully!')
         return redirect('settings')
-    return render(request, 'settings/settings.html')
+    
+    gemini_api_key = load_gemini_key()
+    twilio_config = load_twilio_settings()
+    return render(request, 'settings/settings.html', {
+        'gemini_api_key': gemini_api_key,
+        'twilio_account_sid': twilio_config['TWILIO_ACCOUNT_SID'],
+        'twilio_auth_token': twilio_config['TWILIO_AUTH_TOKEN'],
+        'twilio_phone_number': twilio_config['TWILIO_PHONE_NUMBER']
+    })
 
 
 @login_required
@@ -159,12 +250,25 @@ from django.contrib.auth import login
 
 def google_login_view(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
+        email = request.POST.get('email', '').strip()
+        if not email:
+            messages.error(request, 'Google login failed: Email is empty.')
+            return redirect('login')
         try:
             user = User.objects.get(email=email)
-            login(request, user)
-            messages.success(request, f'Welcome back, {user.first_name}! Logged in via Google.')
-            return redirect('dashboard')
         except User.DoesNotExist:
-            messages.error(request, 'No registered account found for this Google email.')
+            username = email.split('@')[0]
+            if User.objects.filter(username=email).exists():
+                user = User.objects.get(username=email)
+            else:
+                user = User.objects.create_user(
+                    username=email,
+                    email=email,
+                    first_name=username.capitalize(),
+                    last_name='User',
+                    role='user'
+                )
+        login(request, user)
+        messages.success(request, f'Welcome, {user.first_name}! Logged in via Google.')
+        return redirect('dashboard')
     return redirect('login')

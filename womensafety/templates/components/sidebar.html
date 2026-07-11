@@ -105,11 +105,6 @@
     <div class="section-divider"></div>
     <p class="sidebar-text text-xs font-bold text-gray-400 uppercase tracking-widest px-3 mb-2">Community</p>
 
-    <a href="{% url 'mentors' %}" class="sidebar-link" id="navMentors">
-      <i data-lucide="users" class="icon"></i>
-      <span class="sidebar-text">Mentors</span>
-    </a>
-
     <a href="{% url 'jobs' %}" class="sidebar-link" id="navJobs">
       <i data-lucide="briefcase" class="icon"></i>
       <span class="sidebar-text">Jobs</span>
@@ -131,13 +126,6 @@
       <i data-lucide="settings" class="icon"></i>
       <span class="sidebar-text">Settings</span>
     </a>
-
-    {% if request.user.role == 'mentor' %}
-    <a href="{% url 'mentorship_requests' %}" class="sidebar-link text-blue-600 dark:text-blue-400" id="navRequests">
-      <i data-lucide="calendar" class="icon"></i>
-      <span class="sidebar-text font-bold">Session Requests</span>
-    </a>
-    {% endif %}
 
     {% if request.user.is_staff or request.user.role == 'admin' %}
     <a href="{% url 'admin_dashboard' %}" class="sidebar-link text-purple-600 dark:text-purple-400">

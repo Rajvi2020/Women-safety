@@ -14,7 +14,7 @@
       <button id="newChatBtn" class="text-xs btn-primary py-1.5 px-3">+ New</button>
     </div>
     <div class="space-y-1 overflow-y-auto flex-1">
-      {% for conv in conversations %}
+      {% for conv in chats %}
       <button class="w-full text-left p-3 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/20 transition text-sm truncate {% if conv.id == active_conv %}bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 font-semibold{% else %}text-gray-600 dark:text-gray-400{% endif %}">
         {{ conv.title }}
       </button>
@@ -81,7 +81,7 @@
         </div>
       </div>
 
-      {% for msg in messages %}
+      {% for msg in chat_messages %}
       {% if msg.role == 'user' %}
       <div class="flex items-end justify-end gap-3">
         <div>
@@ -98,6 +98,7 @@
           <p class="text-xs text-gray-400 mt-1">{{ msg.timestamp|time:"H:i" }}</p>
         </div>
       </div>
+      {% endif %}
       {% endfor %}
     </div>
 

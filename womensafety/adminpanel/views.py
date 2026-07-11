@@ -19,16 +19,13 @@ def is_admin(user):
 def admin_dashboard_view(request):
     return render(request, 'admin/admin_dashboard.html', {
         'total_users': User.objects.count(),
-        'total_mentors': Mentor.objects.filter(is_verified=True).count(),
-        'pending_mentors': Mentor.objects.filter(is_verified=False).count(),
-        'pending_mentors_list': Mentor.objects.filter(is_verified=False).select_related('user')[:5],
+        'total_sos_alerts': SOSAlert.objects.count(),
         'active_jobs': Job.objects.filter(is_active=True).count(),
         'sos_today': SOSAlert.objects.filter(created_at__date=timezone.now().date()).count(),
         'sos_resolved': SOSAlert.objects.filter(created_at__date=timezone.now().date(), status='resolved').count(),
         'recent_users': User.objects.order_by('-date_joined')[:5],
         'recent_sos': SOSAlert.objects.order_by('-created_at')[:5],
-        'pending_count': Mentor.objects.filter(is_verified=False).count(),
-        'sessions': MentorSession.objects.count(),
+        'sessions': MentorSession.objects.count() if hasattr(MentorSession, 'objects') else 0,
         'applications': JobApplication.objects.count(),
     })
 
@@ -309,6 +306,8 @@ def admin_sos_detail_view(request, pk):
         'phone': sos.user.phone or '—',
         'email': sos.user.email,
         'location': sos.location or '—',
+        'latitude': float(sos.latitude) if sos.latitude else None,
+        'longitude': float(sos.longitude) if sos.longitude else None,
         'status': sos.status,
         'created_at': sos.created_at.strftime('%d %b %Y, %H:%M'),
         'resolved_at': sos.resolved_at.strftime('%d %b %Y, %H:%M') if sos.resolved_at else '—',
@@ -335,7 +334,7 @@ def admin_reports_view(request):
 
     return render(request, 'admin/admin_reports.html', {
         'new_users': User.objects.count(),
-        'sessions': MentorSession.objects.count(),
+        'resources_count': Resource.objects.count(),
         'applied': JobApplication.objects.count(),
         'sos_total': SOSAlert.objects.count(),
         'monthly_growth': chart_data,
@@ -352,11 +351,9 @@ def admin_export_report_view(request):
     writer.writerow(['Section', 'Metric', 'Value'])
     writer.writerow(['Users', 'Total', User.objects.count()])
     writer.writerow(['Users', 'Active', User.objects.filter(is_active=True).count()])
-    writer.writerow(['Mentors', 'Verified', Mentor.objects.filter(is_verified=True).count()])
-    writer.writerow(['Mentors', 'Pending', Mentor.objects.filter(is_verified=False).count()])
     writer.writerow(['Jobs', 'Active', Job.objects.filter(is_active=True).count()])
     writer.writerow(['Jobs', 'Total', Job.objects.count()])
-    writer.writerow(['Sessions', 'Total', MentorSession.objects.count()])
+    writer.writerow(['Resources', 'Total', Resource.objects.count()])
     writer.writerow(['Applications', 'Total', JobApplication.objects.count()])
     writer.writerow(['SOS Alerts', 'Total', SOSAlert.objects.count()])
     writer.writerow(['SOS Alerts', 'Resolved', SOSAlert.objects.filter(status='resolved').count()])

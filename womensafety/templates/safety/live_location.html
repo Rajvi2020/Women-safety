@@ -57,53 +57,13 @@
           <a href="{% url 'safe_route' %}" class="btn-outline text-xs py-1.5 px-3">Safe Route</a>
         </div>
       </div>
-      <!-- Live Map Visual -->
-      <div class="relative bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100 dark:from-blue-900/20 dark:via-purple-900/20 dark:to-indigo-900/20" style="height:420px;">
-        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 500 420" preserveAspectRatio="xMidYMid meet">
-          <!-- Grid lines -->
-          <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#E5E7EB" stroke-width="0.5" opacity="0.5"/>
-            </pattern>
-          </defs>
-          <rect width="500" height="420" fill="url(#grid)"/>
-          <!-- Roads -->
-          <line x1="0" y1="210" x2="500" y2="210" stroke="#D1D5DB" stroke-width="12" opacity="0.4"/>
-          <line x1="250" y1="0" x2="250" y2="420" stroke="#D1D5DB" stroke-width="12" opacity="0.4"/>
-          <line x1="0" y1="120" x2="500" y2="300" stroke="#D1D5DB" stroke-width="6" opacity="0.3"/>
-          <!-- Buildings -->
-          <rect x="50" y="60" width="70" height="50" fill="#A78BFA" opacity="0.2" rx="4"/>
-          <rect x="160" y="240" width="80" height="60" fill="#EC4899" opacity="0.15" rx="4"/>
-          <rect x="300" y="80" width="60" height="80" fill="#6366F1" opacity="0.2" rx="4"/>
-          <rect x="370" y="260" width="90" height="50" fill="#A78BFA" opacity="0.15" rx="4"/>
-          <!-- Safe zones -->
-          <circle cx="250" cy="210" r="60" fill="#10B981" opacity="0.08" stroke="#10B981" stroke-width="1.5" stroke-dasharray="6 3"/>
-          <!-- User location pin with pulse -->
-          <circle cx="250" cy="210" r="30" fill="#7C3AED" opacity="0.15">
-            <animate attributeName="r" values="20;35;20" dur="2s" repeatCount="indefinite"/>
-            <animate attributeName="opacity" values="0.2;0.05;0.2" dur="2s" repeatCount="indefinite"/>
-          </circle>
-          <circle cx="250" cy="210" r="12" fill="#7C3AED"/>
-          <circle cx="250" cy="210" r="5" fill="white"/>
-          <!-- Location label -->
-          <rect x="195" y="175" width="110" height="26" fill="white" rx="6" opacity="0.9"/>
-          <text x="250" y="192" text-anchor="middle" font-size="10" font-weight="600" fill="#7C3AED">📍 Your Location</text>
-          <!-- Nearby contacts -->
-          <circle cx="150" cy="140" r="8" fill="#EC4899"/>
-          <text x="150" y="128" text-anchor="middle" font-size="8" fill="#BE185D">Meera</text>
-          <circle cx="380" cy="280" r="8" fill="#6366F1"/>
-          <text x="380" y="268" text-anchor="middle" font-size="8" fill="#4338CA">Riya</text>
-        </svg>
-        <!-- Map controls -->
-        <div class="absolute top-3 right-3 flex flex-col gap-2">
-          <button class="w-9 h-9 bg-white dark:bg-gray-800 rounded-xl shadow-lg flex items-center justify-center text-gray-700 dark:text-gray-300 font-bold text-lg hover:bg-purple-50 transition">+</button>
-          <button class="w-9 h-9 bg-white dark:bg-gray-800 rounded-xl shadow-lg flex items-center justify-center text-gray-700 dark:text-gray-300 font-bold text-lg hover:bg-purple-50 transition">−</button>
-          <button onclick="centerMap()" class="w-9 h-9 bg-white dark:bg-gray-800 rounded-xl shadow-lg flex items-center justify-center text-purple-600 hover:bg-purple-50 transition">
-            <i data-lucide="crosshair" class="w-4 h-4"></i>
-          </button>
-        </div>
+      <!-- Leaflet Map Container -->
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+      <div class="relative bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20" style="height:420px;">
+        <div id="liveMapEl" class="w-full h-full" style="height:420px; z-index: 1;"></div>
         <!-- Last updated -->
-        <div class="absolute bottom-3 left-3 bg-white/90 dark:bg-gray-900/90 text-xs px-3 py-1.5 rounded-xl text-gray-500 backdrop-blur-sm">
+        <div class="absolute bottom-3 left-3 bg-white/90 dark:bg-gray-900/90 text-xs px-3 py-1.5 rounded-xl text-gray-500 backdrop-blur-sm z-[1000]">
           Last updated: <span id="lastUpdated">Just now</span>
         </div>
       </div>
@@ -181,6 +141,31 @@
 </div>
 
 <script>
+let liveMap;
+let liveMarker;
+
+function initLiveMap(lat, lng) {
+  if (liveMap) return;
+  liveMap = L.map('liveMapEl').setView([lat, lng], 15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(liveMap);
+  
+  liveMarker = L.marker([lat, lng]).addTo(liveMap)
+    .bindPopup('<b>Your Current Live Location</b>')
+    .openPopup();
+}
+
+function updateMarkerLocation(lat, lng) {
+  if (liveMarker) {
+    liveMarker.setLatLng([lat, lng]);
+    liveMap.setView([lat, lng]);
+  } else {
+    initLiveMap(lat, lng);
+  }
+}
+
 function toggleTracking(inp) {
   const status = document.getElementById('trackingStatus');
   status.textContent = inp.checked ? 'Tracking Active' : 'Tracking Paused';
@@ -193,19 +178,31 @@ function shareLocation() {
     Toast.success('🔗 Share link copied to clipboard!');
   }
 }
-function centerMap() { Toast.info('Map centered to your location'); }
+function centerMap() {
+  if (liveMap && liveMarker) {
+    liveMap.setView(liveMarker.getLatLng(), 16);
+    Toast.success('Map centered to your location');
+  } else {
+    Toast.info('Map centered to your location');
+  }
+}
 // Geolocation
 if(navigator.geolocation) {
   navigator.geolocation.watchPosition(pos => {
-    const lat = pos.coords.latitude.toFixed(5);
-    const lng = pos.coords.longitude.toFixed(5);
-    document.getElementById('coordsDisplay').textContent = `${lat}°N, ${lng}°E`;
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    document.getElementById('coordsDisplay').textContent = `${lat.toFixed(5)}°N, ${lng.toFixed(5)}°E`;
     document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+    updateMarkerLocation(lat, lng);
   }, () => {
-    document.getElementById('coordsDisplay').textContent = '18.5204°N, 73.8567°E';
+    const defaultLat = 18.5204;
+    const defaultLng = 73.8567;
+    document.getElementById('coordsDisplay').textContent = `${defaultLat}°N, ${defaultLng}°E`;
+    updateMarkerLocation(defaultLat, defaultLng);
   });
 } else {
   document.getElementById('coordsDisplay').textContent = 'Not available';
+  initLiveMap(18.5204, 73.8567);
 }
 </script>
 {% endblock %}

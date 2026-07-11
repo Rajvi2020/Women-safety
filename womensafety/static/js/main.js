@@ -103,6 +103,9 @@ const Modal = (() => {
     const el = document.getElementById(id);
     el?.classList.remove('active');
     document.body.style.overflow = '';
+    if (id === 'sosModal' && window.Siren) {
+      window.Siren.stop();
+    }
   }
   function init() {
     document.querySelectorAll('[data-modal-open]').forEach(btn => {
@@ -331,12 +334,211 @@ const SOS = (() => {
     }
     function cancel() { clearInterval(timer); if (countdownEl) countdownEl.textContent = ''; }
     function trigger() {
-      Toast.error('🚨 SOS ACTIVATED! Emergency contacts notified!');
-      Modal.open('sosModal');
+      Toast.error('🚨 SOS ACTIVATED! Fetching location...');
+      if (window.Siren) {
+        window.Siren.start();
+      }
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          sendSosAlert(lat, lng);
+        }, error => {
+          console.warn('Geolocation failed or denied, sending empty coords.');
+          sendSosAlert(null, null);
+        });
+      } else {
+        sendSosAlert(null, null);
+      }
+    }
+    function sendSosAlert(lat, lng) {
+      const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+      fetch('/safety/sos/trigger/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          lat: lat,
+          lng: lng,
+          location: lat && lng ? `${lat.toFixed(4)}, ${lng.toFixed(4)}` : 'Unknown Location'
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'ok') {
+          Toast.success('🚨 SOS saved to history!');
+          const contactsListEl = document.getElementById('sosContactsList');
+          const contactsSection = document.getElementById('sosContactsSection');
+          if (contactsListEl && contactsSection) {
+            contactsListEl.innerHTML = '';
+            const contacts = data.contacts || [];
+            if (contacts.length > 0) {
+              contacts.forEach(contact => {
+                const mapUrl = lat && lng ? `https://www.google.com/maps?q=${lat},${lng}` : 'unknown';
+                const smsText = `EMERGENCY! I need help immediately. My live location: ${mapUrl}`;
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 rounded-xl text-blue-700 dark:text-blue-300 font-semibold text-sm';
+                item.innerHTML = `
+                  <span>${contact.name} (${contact.phone})</span>
+                  <button onclick="sendSmsViaApi('${contact.phone}', '${smsText.replace(/'/g, "\\'")}', this)" class="text-xs py-1 px-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">Send SMS</button>
+                `;
+                contactsListEl.appendChild(item);
+              });
+              contactsSection.classList.remove('hidden');
+            } else {
+              contactsListEl.innerHTML = '<p class="text-xs text-gray-500">No emergency contacts configured. Please add some.</p>';
+              contactsSection.classList.remove('hidden');
+            }
+          }
+          Modal.open('sosModal');
+        } else {
+          Toast.error('Failed to trigger SOS alert');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        Toast.error('Failed to send SOS request');
+      });
     }
   }
   return { init };
 })();
+
+function sendSmsViaApi(phone, message, btnEl) {
+  const originalText = btnEl.innerHTML;
+  btnEl.disabled = true;
+  btnEl.innerHTML = 'Sending...';
+  const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+  fetch('/safety/sos/send-sms/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken,
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: JSON.stringify({ phone: phone, message: message })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 'ok') {
+      Toast.success('✉️ SMS sent successfully!');
+      btnEl.innerHTML = '✓ Sent';
+      btnEl.disabled = true;
+      btnEl.className = 'text-xs py-1 px-2.5 bg-green-600 text-white rounded-lg pointer-events-none';
+    } else if (data.status === 'fallback') {
+      if (data.message && !data.message.includes('not configured')) {
+        Toast.error('Twilio error: ' + data.message);
+      }
+      
+      // Auto-copy message to clipboard as safety backup for desktop SMS handlers like Phone Link
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(message)
+          .then(() => {
+            Toast.success('📋 Emergency message copied to clipboard! You can paste it (Ctrl+V).');
+          })
+          .catch(err => console.error('Clipboard copy failed:', err));
+      }
+      
+      Toast.info('Opening device SMS app...');
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const smsUrl = `sms:${phone}${isIOS ? '&' : '?'}body=${encodeURIComponent(message)}`;
+      
+      const link = document.createElement('a');
+      link.href = smsUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      btnEl.innerHTML = '✓ Opened';
+      btnEl.disabled = true;
+      btnEl.className = 'text-xs py-1 px-2.5 bg-blue-600 text-white rounded-lg pointer-events-none';
+    } else {
+      Toast.error('Failed to send SMS: ' + data.message);
+      btnEl.disabled = false;
+      btnEl.innerHTML = originalText;
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    Toast.error('Network error sending SMS');
+    btnEl.disabled = false;
+    btnEl.innerHTML = originalText;
+  });
+}
+window.sendSmsViaApi = sendSmsViaApi;
+
+const Siren = (() => {
+  let audioCtx = null;
+  let osc1 = null;
+  let osc2 = null;
+  let gainNode = null;
+  let lfo = null;
+  let isPlaying = false;
+
+  function start() {
+    if (isPlaying) return;
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContext();
+      
+      // Main oscillator: triangle wave gives a smoother, rounder wailing horn sound (ambulance)
+      osc1 = audioCtx.createOscillator();
+      osc1.type = 'triangle';
+      
+      // Supporting oscillator for harmonic fullness
+      osc2 = audioCtx.createOscillator();
+      osc2.type = 'sine';
+      
+      gainNode = audioCtx.createGain();
+      
+      // LFO set to 0.8Hz for a slower, smooth wail (ambulance wail)
+      lfo = audioCtx.createOscillator();
+      lfo.frequency.value = 0.8; 
+      
+      const lfoGain = audioCtx.createGain();
+      lfoGain.gain.value = 250; 
+      
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc1.frequency);
+      lfoGain.connect(osc2.frequency);
+      
+      osc1.frequency.setValueAtTime(650, audioCtx.currentTime);
+      osc2.frequency.setValueAtTime(650, audioCtx.currentTime);
+      
+      osc1.connect(gainNode);
+      osc2.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+      
+      lfo.start();
+      osc1.start();
+      osc2.start();
+      isPlaying = true;
+    } catch (e) {
+      console.error('Failed to play siren:', e);
+    }
+  }
+
+  function stop() {
+    if (!isPlaying) return;
+    try {
+      if (osc1) { osc1.stop(); osc1 = null; }
+      if (osc2) { osc2.stop(); osc2 = null; }
+      if (lfo) { lfo.stop(); lfo = null; }
+      if (audioCtx) { audioCtx.close(); audioCtx = null; }
+      isPlaying = false;
+    } catch (e) {
+      console.error('Failed to stop siren:', e);
+    }
+  }
+
+  return { start, stop };
+})();
+window.Siren = Siren;
 
 /* ══════════════════════════════════════════
    12. COUNTER ANIMATION

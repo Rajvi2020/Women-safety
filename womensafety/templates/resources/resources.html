@@ -31,10 +31,10 @@
       </div>
       <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">Complete guide to the Prevention of Sexual Harassment at Workplace Act, 2013. Know your rights and how to file complaints.</p>
       <div class="flex gap-2">
-        <a href="#" class="btn-primary flex-1 text-sm py-2 text-center flex items-center justify-center gap-1.5">
+        <button onclick="readGuide('POSH Act — Workplace Rights', 'The Sexual Harassment of Women at Workplace (Prevention, Prohibition and Redressal) Act, 2013 (POSH Act) is a legislative act in India that seeks to protect women from sexual harassment at their place of work.<br><br><b>Key Rights:</b><br>1. Every employer must constitute an Internal Complaints Committee (ICC) at each office or branch with 10 or more employees.<br>2. The ICC must be headed by a senior woman employee.<br>3. Complaints must be filed within 3 months of the last incident.<br>4. Conciliation options are available prior to formal inquiry.<br>5. Complete confidentiality of the victim and witnesses must be maintained throughout.')" class="btn-primary flex-1 text-sm py-2 text-center flex items-center justify-center gap-1.5">
           <i data-lucide="external-link" class="w-4 h-4"></i> Read Guide
-        </a>
-        <button class="w-10 h-9 rounded-xl border-2 border-gray-200 dark:border-purple-900/40 flex items-center justify-center hover:border-purple-400 transition">
+        </button>
+        <button class="w-10 h-9 rounded-xl border-2 border-gray-200 dark:border-purple-900/40 flex items-center justify-center hover:border-purple-400 transition" onclick="Toast.success('Bookmarked!')">
           <i data-lucide="bookmark" class="w-4 h-4 text-gray-500"></i>
         </button>
       </div>
@@ -50,8 +50,10 @@
       </div>
       <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">Protection of Women from Domestic Violence Act, 2005 — Emergency remedies, protection orders, and helplines.</p>
       <div class="flex gap-2">
-        <a href="#" class="btn-primary flex-1 text-sm py-2 text-center flex items-center justify-center gap-1.5"><i data-lucide="external-link" class="w-4 h-4"></i> Read Guide</a>
-        <button class="w-10 h-9 rounded-xl border-2 border-gray-200 dark:border-purple-900/40 flex items-center justify-center hover:border-purple-400 transition"><i data-lucide="bookmark" class="w-4 h-4 text-gray-500"></i></button>
+        <button onclick="readGuide('Domestic Violence Act Guide', 'The Protection of Women from Domestic Violence Act, 2005 is an Act of the Parliament of India enacted to protect women from domestic violence of all forms.<br><br><b>Remedies Available:</b><br>1. Protection orders prohibiting the abuser from committing further acts of violence.<br>2. Residence orders restraining the abuser from entering the shared household.<br>3. Monetary relief for medical expenses or loss of earnings.<br>4. Temporary custody orders for children.<br>5. Services of Protection Officers and Medical Facilities near you.')" class="btn-primary flex-1 text-sm py-2 text-center flex items-center justify-center gap-1.5">
+          <i data-lucide="external-link" class="w-4 h-4"></i> Read Guide
+        </button>
+        <button class="w-10 h-9 rounded-xl border-2 border-gray-200 dark:border-purple-900/40 flex items-center justify-center hover:border-purple-400 transition" onclick="Toast.success('Bookmarked!')"><i data-lucide="bookmark" class="w-4 h-4 text-gray-500"></i></button>
       </div>
     </div>
 
@@ -66,8 +68,10 @@
       </div>
       <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">Evidence-based techniques for managing anxiety, PTSD, and burnout specifically for women in high-stress environments.</p>
       <div class="flex gap-2">
-        <a href="#" class="btn-primary flex-1 text-sm py-2 text-center flex items-center justify-center gap-1.5"><i data-lucide="external-link" class="w-4 h-4"></i> Read Guide</a>
-        <button class="w-10 h-9 rounded-xl border-2 border-gray-200 dark:border-purple-900/40 flex items-center justify-center hover:border-purple-400 transition"><i data-lucide="bookmark" class="w-4 h-4 text-gray-500"></i></button>
+        <button onclick="readGuide('Mental Health & Stress Management', 'Maintaining mental well-being in high-stress work or personal environments is vital for overall health.<br><br><b>Stress Relieving Tips:</b><br>1. Practice box breathing (inhale for 4 seconds, hold for 4, exhale for 4, hold for 4).<br>2. Set clear boundaries between work hours and personal recovery hours.<br>3. Incorporate physical activity: 30 minutes of walking or yoga can reduce stress hormones.<br>4. Connect with a professional therapist or counselor if anxiety feels overwhelming.')" class="btn-primary flex-1 text-sm py-2 text-center flex items-center justify-center gap-1.5">
+          <i data-lucide="external-link" class="w-4 h-4"></i> Read Guide
+        </button>
+        <button class="w-10 h-9 rounded-xl border-2 border-gray-200 dark:border-purple-900/40 flex items-center justify-center hover:border-purple-400 transition" onclick="Toast.success('Bookmarked!')"><i data-lucide="bookmark" class="w-4 h-4 text-gray-500"></i></button>
       </div>
     </div>
 
@@ -82,14 +86,14 @@
       </div>
       <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">Illustrated guide to basic self-defense moves, escape techniques, and situational awareness tips.</p>
       <div class="flex gap-2">
-        <a href="#" download class="btn-primary flex-1 text-sm py-2 text-center flex items-center justify-center gap-1.5"><i data-lucide="download" class="w-4 h-4"></i> Download PDF</a>
-        <button class="w-10 h-9 rounded-xl border-2 border-gray-200 dark:border-purple-900/40 flex items-center justify-center hover:border-purple-400 transition"><i data-lucide="bookmark" class="w-4 h-4 text-gray-500"></i></button>
+        <a href="{% static 'downloads/safety_handbook.pdf' %}" target="_blank" download class="btn-primary flex-1 text-sm py-2 text-center flex items-center justify-center gap-1.5"><i data-lucide="download" class="w-4 h-4"></i> Download PDF</a>
+        <button class="w-10 h-9 rounded-xl border-2 border-gray-200 dark:border-purple-900/40 flex items-center justify-center hover:border-purple-400 transition" onclick="Toast.success('Bookmarked!')"><i data-lucide="bookmark" class="w-4 h-4 text-gray-500"></i></button>
       </div>
     </div>
 
     <!-- Video Resources -->
     <div class="card p-5 resource-item" data-category="video" data-aos>
-      <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-purple-200 to-pink-200 h-36 mb-3 flex items-center justify-center cursor-pointer" onclick="playVideo('https://youtube.com/embed/example')">
+      <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-purple-200 to-pink-200 h-36 mb-3 flex items-center justify-center cursor-pointer" onclick="window.open('https://www.youtube.com/watch?v=KVpxP3GpIb8', '_blank')">
         <div class="w-14 h-14 bg-white/80 rounded-full flex items-center justify-center shadow-lg">
           <i data-lucide="play" class="w-6 h-6 text-purple-600 ml-1"></i>
         </div>
@@ -98,21 +102,60 @@
       </div>
       <h4 class="font-bold text-sm mb-1">Awareness Walk — Safety in Public Spaces</h4>
       <p class="text-xs text-gray-400 mb-3">Expert-led session on recognizing unsafe situations and de-escalation</p>
-      <button class="btn-outline w-full text-sm py-2">Watch Now</button>
+      <a href="https://www.youtube.com/watch?v=KVpxP3GpIb8" target="_blank" class="btn-outline w-full text-sm py-2 text-center block">Watch Now</a>
     </div>
 
     <div class="card p-5 resource-item" data-category="video" data-aos>
-      <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-200 to-blue-200 h-36 mb-3 flex items-center justify-center cursor-pointer">
+      <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-200 to-blue-200 h-36 mb-3 flex items-center justify-center cursor-pointer" onclick="window.open('https://www.youtube.com/watch?v=T27u01P4k2A', '_blank')">
         <div class="w-14 h-14 bg-white/80 rounded-full flex items-center justify-center shadow-lg">
           <i data-lucide="play" class="w-6 h-6 text-indigo-600 ml-1"></i>
         </div>
         <span class="absolute top-2 right-2 badge badge-blue text-xs">Video</span>
         <span class="absolute bottom-2 right-2 text-xs text-white font-bold bg-black/50 px-2 py-0.5 rounded">8:15</span>
       </div>
-      <h4 class="font-bold text-sm mb-1">Women in Tech — Breaking Barriers</h4>
-      <p class="text-xs text-gray-400 mb-3">Inspiring stories from women leaders in Indian tech industry</p>
-      <button class="btn-outline w-full text-sm py-2">Watch Now</button>
+      <h4 class="font-bold text-sm mb-1">Self Defense Basics — Simple Moves</h4>
+      <p class="text-xs text-gray-400 mb-3">Easy and practical physical self-defense strategies for women</p>
+      <a href="https://www.youtube.com/watch?v=T27u01P4k2A" target="_blank" class="btn-outline w-full text-sm py-2 text-center block">Watch Now</a>
     </div>
+
+    <!-- Dynamic Resources from DB -->
+    {% for res in resources %}
+    <div class="card p-5 resource-item" data-category="{{ res.category }}" data-aos>
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl
+          {% if res.category == 'legal' %}bg-indigo-100 dark:bg-indigo-900/30{% elif res.category == 'health' %}bg-green-100 dark:bg-green-900/30{% elif res.category == 'pdf' %}bg-red-100 dark:bg-red-900/30{% elif res.category == 'video' %}bg-purple-100 dark:bg-purple-900/30{% else %}bg-gray-100 dark:bg-gray-900/30{% endif %}">
+          {% if res.category == 'legal' %}⚖️{% elif res.category == 'health' %}💊{% elif res.category == 'pdf' %}📄{% elif res.category == 'video' %}📹{% else %}📦{% endif %}
+        </div>
+        <div>
+          <span class="badge 
+            {% if res.category == 'legal' %}badge-blue{% elif res.category == 'health' %}badge-green{% elif res.category == 'pdf' %}badge-red{% elif res.category == 'video' %}badge-purple{% else %}badge-gray{% endif %} text-xs mb-1">{{ res.get_category_display }}</span>
+          <h4 class="font-bold text-sm">{{ res.title }}</h4>
+        </div>
+      </div>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">{{ res.description }}</p>
+      <div class="flex gap-2 w-full">
+        {% if res.category == 'video' and res.url %}
+        <a href="{{ res.url }}" target="_blank" class="btn-primary flex-1 text-sm py-2 text-center flex items-center justify-center gap-1.5">
+          <i data-lucide="play" class="w-4 h-4"></i> Watch Now
+        </a>
+        {% elif res.category == 'pdf' and res.url %}
+        <a href="{{ res.url }}" target="_blank" class="btn-primary flex-1 text-sm py-2 text-center flex items-center justify-center gap-1.5">
+          <i data-lucide="download" class="w-4 h-4"></i> Download PDF
+        </a>
+        {% elif res.file %}
+        <a href="{{ res.file.url }}" target="_blank" class="btn-primary flex-1 text-sm py-2 text-center flex items-center justify-center gap-1.5">
+          <i data-lucide="external-link" class="w-4 h-4"></i> Open File
+        </a>
+        {% elif res.url %}
+        <a href="{{ res.url }}" target="_blank" class="btn-primary flex-1 text-sm py-2 text-center flex items-center justify-center gap-1.5">
+          <i data-lucide="external-link" class="w-4 h-4"></i> Open Link
+        </a>
+        {% else %}
+        <button class="btn-primary flex-1 text-sm py-2" disabled>No Link</button>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
   </div>
 
   <!-- FAQ Section -->
@@ -167,6 +210,37 @@
 
 </div>
 
+  <!-- Video Player Modal -->
+  <div id="videoModal" class="modal-overlay">
+    <div class="modal-box p-0 overflow-hidden" style="max-width:640px; border-radius: 20px;">
+      <div class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-gray-800">
+        <h3 class="font-display font-bold text-lg text-purple-600 dark:text-purple-400">📹 Watch Resource Video</h3>
+        <button onclick="closeVideo()" class="text-gray-400 hover:text-red-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="relative aspect-video">
+        <iframe id="videoPlayerFrame" class="w-full h-full border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Guide Modal -->
+  <div id="guideModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:540px;">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100 dark:border-white/10">
+        <h3 class="font-display font-bold text-xl text-purple-600 dark:text-purple-400" id="guideModalTitle">Guide</h3>
+        <button onclick="closeGuide()" class="text-gray-400 hover:text-red-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="prose dark:prose-invert text-sm text-gray-600 dark:text-gray-300 leading-relaxed" id="guideModalContent">
+        <!-- Content gets injected -->
+      </div>
+      <div class="mt-6 flex justify-end">
+        <button onclick="closeGuide()" class="btn-primary py-2 px-5 text-sm">Close</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <script>
 function filterResources(category) {
   document.querySelectorAll('.resource-item').forEach(el => {
@@ -179,6 +253,39 @@ function toggleFaq(btn) {
   const icon = btn.querySelector('[data-lucide="chevron-down"]');
   content.classList.toggle('hidden');
   icon?.classList.toggle('rotate-180');
+}
+function playVideo(url) {
+  let embedUrl = url;
+  try {
+    if (url.includes('youtube.com/watch?v=')) {
+      const videoId = url.split('v=')[1]?.split('&')[0];
+      if (videoId) embedUrl = `https://www.youtube.com/embed/${videoId}`;
+    } else if (url.includes('youtu.be/')) {
+      const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+      if (videoId) embedUrl = `https://www.youtube.com/embed/${videoId}`;
+    }
+  } catch (e) {
+    console.error("Error parsing YouTube URL:", e);
+  }
+  const modal = document.getElementById('videoModal');
+  const iframe = document.getElementById('videoPlayerFrame');
+  iframe.src = embedUrl;
+  modal.classList.add('active');
+}
+function closeVideo() {
+  const modal = document.getElementById('videoModal');
+  const iframe = document.getElementById('videoPlayerFrame');
+  iframe.src = '';
+  modal.classList.remove('active');
+}
+function readGuide(title, content) {
+  const modal = document.getElementById('guideModal');
+  document.getElementById('guideModalTitle').textContent = title;
+  document.getElementById('guideModalContent').innerHTML = content;
+  modal.classList.add('active');
+}
+function closeGuide() {
+  document.getElementById('guideModal').classList.remove('active');
 }
 </script>
 {% endblock %}

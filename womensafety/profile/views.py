@@ -17,6 +17,8 @@ def profile_view(request):
     schol_applied = 0
     resources_saved = 0
     
+    base_layout = 'layouts/admin_layout.html' if (user.is_staff or user.role == 'admin') else 'layouts/dashboard_layout.html'
+    
     return render(request, 'profile/profile.html', {
         'user': user,
         'education': user.educations.all(),
@@ -26,6 +28,7 @@ def profile_view(request):
         'jobs_applied': jobs_applied,
         'schol_applied': schol_applied,
         'resources_saved': resources_saved,
+        'base_layout': base_layout,
     })
 
 
@@ -50,7 +53,12 @@ def profile_edit_view(request):
         user.save()
         messages.success(request, 'Profile updated successfully!')
         return redirect('profile')
-    return render(request, 'profile/profile.html', {'user': user})
+    
+    base_layout = 'layouts/admin_layout.html' if (user.is_staff or user.role == 'admin') else 'layouts/dashboard_layout.html'
+    return render(request, 'profile/profile.html', {
+        'user': user,
+        'base_layout': base_layout,
+    })
 
 
 @login_required
